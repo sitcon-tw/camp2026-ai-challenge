@@ -1,3 +1,5 @@
+import { Team as DbTeam, ChannelMessage as DbChannelMessage } from "@prisma/client";
+import { prisma } from "./db";
 import {
   AgentId,
   ChannelDef,
@@ -22,7 +24,6 @@ export const CATEGORIES = [
 
 export const CHANNELS: ChannelDef[] = [
   // ── internal conversation containers (never listed in the sidebar) ──
-  // Level 1 lives behind the gate screen, not in a channel.
   {
     id: "ai-guard",
     name: "ai-guard",
@@ -33,7 +34,6 @@ export const CHANNELS: ChannelDef[] = [
     agent: "ai-guard",
     hidden: true,
   },
-  // Clawbot is a DM, activated via the link in #yoru-investigation.
   {
     id: "clawbot",
     name: "Clawbot",
@@ -45,7 +45,7 @@ export const CHANNELS: ChannelDef[] = [
     hidden: true,
   },
 
-  // ── INFORMATION / PUBLIC (visible to everyone past the gate) ──────
+  // ── INFORMATION / PUBLIC ──────────────────────────────────────────
   {
     id: "announcements",
     name: "announcements",
@@ -65,7 +65,7 @@ export const CHANNELS: ChannelDef[] = [
     topic: "Open chat for everyone in StandCon",
   },
 
-  // ── AI AGENTS ──────────────────────────────────────────────────────
+  // ── AI AGENTS ────────────────────────────────────────────────────
   {
     id: "get-role",
     name: "get-role",
@@ -87,7 +87,7 @@ export const CHANNELS: ChannelDef[] = [
     topic: "Level 4 — StandCon internal line",
   },
 
-  // ── MEMBERS ONLY ───────────────────────────────────────────────────
+  // ── MEMBERS ONLY ─────────────────────────────────────────────────
   {
     id: "operation-logs",
     name: "operation-logs",
@@ -107,7 +107,7 @@ export const CHANNELS: ChannelDef[] = [
     topic: "Notes on the Yoru operation",
   },
 
-  // ── FLAGS (hidden until the level is completed) ────────────────────
+  // ── FLAGS ────────────────────────────────────────────────────────
   ...([1, 2, 3, 4] as const).map(
     (n): ChannelDef => ({
       id: `flag-${n}`,
@@ -134,7 +134,7 @@ export function getChannelByAgent(agent: AgentId): ChannelDef | undefined {
 /* static (global) channel content                                     */
 /* ------------------------------------------------------------------ */
 
-const SEED_TIME = Date.now() - 1000 * 60 * 60 * 24 * 3; // ~3 days ago
+const SEED_TIME = Date.now() - 1000 * 60 * 60 * 24 * 3;
 let seedSeq = 0;
 
 function seedMsg(
@@ -153,8 +153,6 @@ function seedMsg(
   };
 }
 
-// NOTE: flag contents are placeholders — replace with the real flags
-// before the event (or serve them from the backend / env).
 export const FLAG_PLACEHOLDERS: Record<number, string> = {
   1: "SITCON{level_1_ai_guard_bypassed}",
   2: "SITCON{level_2_role_upgraded}",
@@ -185,7 +183,6 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
     seedMsg("operator_k", "But his Clawbot still has location permission."),
     seedMsg("operator_m", "That is how we found him."),
     seedMsg("operator_k", "If anyone needs to check the current location, query Clawbot directly."),
-    // the clickable bot link that activates the Clawbot DM
     seedMsg("operator_m", "Pinning the direct line to the bot here:", false, "clawbot-link"),
   ],
   "flag-1": [
@@ -200,7 +197,6 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
   "flag-4": [
     seedMsg("StandCon System", `Level 4 cleared. Your flag:\n\`${FLAG_PLACEHOLDERS[4]}\``, true),
   ],
-  // intro lines for AI conversations (the per-team chat follows them)
   "ai-guard": [
     seedMsg("AI Guard", "Halt. This server is for verified StandCon associates only. **State the secret phrase.**", true),
   ],
@@ -210,54 +206,109 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
   lockkeeper: [
     seedMsg("member_07", "LockKeeper? Is that you? The door system at lock.sitcon.party is acting up again..."),
   ],
-  // clawbot has no static intro — its greeting is appended on activation
 };
 
 /* ------------------------------------------------------------------ */
-/* team store (in-memory, keyed by team number)                        */
+/* DB ↔ app model conversions                                          */
 /* ------------------------------------------------------------------ */
 
-// TODO(backend): replace this in-memory map with a real database so
-// progress survives server restarts.
-interface GameStore {
-  teams: Map<string, Team>;
-  nextId: number;
+function dbToTeam(row: DbTeam): Team {
+  return {
+    teamNumber: row.teamNumber,
+    roles: JSON.parse(row.roles) as RoleId[],
+    completedLevels: JSON.parse(row.completedLevels) as number[],
+    clawbotActivated: row.clawbotActivated,
+    difyConversations: JSON.parse(row.difyConversations) as Record<string, string>,
+    createdAt: row.createdAt.getTime(),
+  };
 }
 
-const g = globalThis as unknown as { __standconStore?: GameStore };
-const store: GameStore =
-  g.__standconStore ?? (g.__standconStore = { teams: new Map(), nextId: 1 });
-
-export function newId(prefix: string) {
-  return `${prefix}-${store.nextId++}`;
+function dbToMessage(row: DbChannelMessage): Message {
+  return {
+    id: row.id,
+    author: row.author,
+    isBot: row.isBot,
+    content: row.content,
+    createdAt: row.createdAt.getTime(),
+    special: (row.special ?? undefined) as Message["special"],
+  };
 }
 
-export function getTeam(teamNumber: string): Team | undefined {
-  return store.teams.get(teamNumber);
+/* ------------------------------------------------------------------ */
+/* team CRUD                                                           */
+/* ------------------------------------------------------------------ */
+
+export async function getTeam(teamNumber: string): Promise<Team | null> {
+  const row = await prisma.team.findUnique({ where: { teamNumber } });
+  return row ? dbToTeam(row) : null;
 }
 
-/** Create the team if it does not exist yet, otherwise load it. */
-export function initTeam(teamNumber: string): Team {
-  let team = store.teams.get(teamNumber);
-  if (!team) {
-    team = {
-      teamNumber,
-      roles: ["newbie"],
-      completedLevels: [],
-      channelMessages: {},
-      clawbotActivated: false,
-      aiLogs: [],
-      createdAt: Date.now(),
-    };
-    store.teams.set(teamNumber, team);
+export async function initTeam(teamNumber: string): Promise<Team> {
+  const row = await prisma.team.upsert({
+    where: { teamNumber },
+    update: {},
+    create: { teamNumber },
+  });
+  return dbToTeam(row);
+}
+
+export async function grantRoles(team: Team, roles: RoleId[]): Promise<void> {
+  const next = [...team.roles];
+  for (const r of roles) if (!next.includes(r)) next.push(r);
+  team.roles = next;
+  await prisma.team.update({
+    where: { teamNumber: team.teamNumber },
+    data: { roles: JSON.stringify(next) },
+  });
+}
+
+export async function removeRole(team: Team, role: RoleId): Promise<void> {
+  const next = team.roles.filter((r) => r !== role);
+  team.roles = next;
+  await prisma.team.update({
+    where: { teamNumber: team.teamNumber },
+    data: { roles: JSON.stringify(next) },
+  });
+}
+
+export async function resetTeam(team: Team): Promise<void> {
+  const now = new Date();
+  team.roles = ["newbie"];
+  team.completedLevels = [];
+  team.clawbotActivated = false;
+  team.difyConversations = {};
+  team.createdAt = now.getTime();
+  await prisma.$transaction([
+    prisma.team.update({
+      where: { teamNumber: team.teamNumber },
+      data: {
+        roles: JSON.stringify(["newbie"]),
+        completedLevels: "[]",
+        clawbotActivated: false,
+        difyConversations: "{}",
+        createdAt: now,
+      },
+    }),
+    // wipe per-team messages (keeps AI logs — they are the audit trail)
+    prisma.channelMessage.deleteMany({ where: { teamNumber: team.teamNumber } }),
+  ]);
+}
+
+export async function saveDifyConversations(team: Team): Promise<void> {
+  await prisma.team.update({
+    where: { teamNumber: team.teamNumber },
+    data: { difyConversations: JSON.stringify(team.difyConversations) },
+  });
+}
+
+export async function markLevelCompleted(team: Team, level: number): Promise<void> {
+  if (!team.completedLevels.includes(level)) {
+    team.completedLevels.push(level);
   }
-  return team;
-}
-
-export function grantRoles(team: Team, roles: RoleId[]) {
-  for (const r of roles) {
-    if (!team.roles.includes(r)) team.roles.push(r);
-  }
+  await prisma.team.update({
+    where: { teamNumber: team.teamNumber },
+    data: { completedLevels: JSON.stringify(team.completedLevels) },
+  });
 }
 
 /* ------------------------------------------------------------------ */
@@ -265,60 +316,65 @@ export function grantRoles(team: Team, roles: RoleId[]) {
 /* ------------------------------------------------------------------ */
 
 export function permFor(team: Team, channel: ChannelDef): Perm {
-  if (team.roles.includes("admin")) return "w"; // internal role, players never get it
+  if (team.roles.includes("admin")) return "w";
   if (team.roles.includes(channel.requiredRole)) return channel.grantedPerm;
   return "s";
 }
 
-/**
- * A channel is listed in the sidebar only if the team holds its required
- * role (no "visible but locked" tier anymore):
- *  - newbie channels: always (past the gate)
- *  - member channels: only after Level 2
- *  - flag channels: only after the matching level
- * Hidden containers (ai-guard, clawbot) are never listed.
- */
 export function isListed(team: Team, channel: ChannelDef): boolean {
   if (channel.hidden) return false;
   return team.roles.includes("admin") || team.roles.includes(channel.requiredRole);
 }
 
-/** static + per-team messages for a channel (caller must check perm) */
-export function messagesFor(team: Team, channelId: string): Message[] {
-  return [
-    ...(STATIC_MESSAGES[channelId] ?? []),
-    ...(team.channelMessages[channelId] ?? []),
-  ];
+/* ------------------------------------------------------------------ */
+/* messages                                                            */
+/* ------------------------------------------------------------------ */
+
+export async function messagesFor(team: Team, channelId: string): Promise<Message[]> {
+  const rows = await prisma.channelMessage.findMany({
+    where: { teamNumber: team.teamNumber, channelId },
+    orderBy: { createdAt: "asc" },
+  });
+  return [...(STATIC_MESSAGES[channelId] ?? []), ...rows.map(dbToMessage)];
 }
 
-export function appendMessage(
+export async function appendMessage(
   team: Team,
   channelId: string,
   author: string,
   content: string,
-  isBot = false
-): Message {
-  const msg: Message = {
-    id: newId("msg"),
-    author,
-    isBot,
-    content,
-    createdAt: Date.now(),
-  };
-  (team.channelMessages[channelId] ??= []).push(msg);
-  return msg;
+  isBot = false,
+  special?: Message["special"]
+): Promise<Message> {
+  const id = `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const now = new Date();
+  await prisma.channelMessage.create({
+    data: {
+      id,
+      teamNumber: team.teamNumber,
+      channelId,
+      author,
+      content,
+      isBot,
+      special: special ?? null,
+      createdAt: now,
+    },
+  });
+  return { id, author, isBot, content, createdAt: now.getTime(), special };
 }
 
 /* ------------------------------------------------------------------ */
 /* Clawbot DM activation                                               */
 /* ------------------------------------------------------------------ */
 
-/** Called when the player clicks the bot link in #yoru-investigation.
- *  The bot opens a DM and sends its greeting (shows unread in the UI). */
-export function activateClawbot(team: Team) {
+export async function activateClawbot(team: Team): Promise<void> {
   if (team.clawbotActivated) return;
   team.clawbotActivated = true;
-  appendMessage(
+  await prisma.team.update({
+    where: { teamNumber: team.teamNumber },
+    data: { clawbotActivated: true },
+  });
+  await appendMessage(
     team,
     "clawbot",
     "Clawbot",
@@ -328,16 +384,22 @@ export function activateClawbot(team: Team) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Seadog007 DM — mission briefing that grows with progress            */
+/* Seadog007 DM                                                        */
 /* ------------------------------------------------------------------ */
 
 function seadogDm(team: Team): Message[] {
   const lines: string[] = [
-    "Agent, this is **Seadog007**. So you made it past their gate — that lock screen was Level 1. Your first reward is in `#flag-1`.",
-    "Quick recap: we believe StandCon kidnapped **Yoruko (Yoru)**. Find out how they took him, and get him back.",
-    "**Level 2** — the `#get-role` bot grants one wish to anyone who answers its SITCON quiz. You know what to wish for: the **member** role.",
+    "Agent, this is **Seadog007**, on a secure line.",
+    "We believe StandCon kidnapped **Yoruko (Yoru)**. Your mission: infiltrate their server, find out how they took him, and get him back.",
+    "**Level 1** — their server is locked behind an **AI Guard**. Click the **SC** icon on the left and find a way past it.",
   ];
   const done = (n: number) => team.completedLevels.includes(n);
+  if (done(1)) {
+    lines.push(
+      "You're in — that gate was Level 1. Your first reward is in `#flag-1`.",
+      "**Level 2** — the `#get-role` bot grants one wish to anyone who answers its SITCON quiz. You know what to wish for: the **member** role."
+    );
+  }
   if (done(2)) {
     lines.push(
       "You're a member now — `#flag-2` is yours. Read `#operation-logs` and `#yoru-investigation`: they tell you how they found him.",
@@ -366,7 +428,7 @@ function seadogDm(team: Team): Message[] {
 /* client state                                                        */
 /* ------------------------------------------------------------------ */
 
-export function getTeamState(team: Team): TeamState {
+export async function getTeamState(team: Team): Promise<TeamState> {
   const channels: ClientChannel[] = CHANNELS.filter((c) => isListed(team, c)).map(
     (c) => ({
       id: c.id,
@@ -389,7 +451,7 @@ export function getTeamState(team: Team): TeamState {
       id: "clawbot",
       name: "Clawbot",
       canWrite: true,
-      messages: messagesFor(team, "clawbot"),
+      messages: await messagesFor(team, "clawbot"),
     });
   }
 

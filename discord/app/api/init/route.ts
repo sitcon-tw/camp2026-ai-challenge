@@ -3,10 +3,6 @@ import { getTeamState, initTeam } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-/**
- * POST /api/init  { teamNumber }
- * Creates or loads the team and returns its initial state.
- */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const teamNumber = String(body?.teamNumber ?? "").trim();
@@ -14,11 +10,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "teamNumber is required" }, { status: 400 });
   }
 
-  const team = initTeam(teamNumber);
-  const state = getTeamState(team);
+  const team = await initTeam(teamNumber);
+  const state = await getTeamState(team);
 
-  // response shape from the spec, plus the full state so the client
-  // can render immediately without a second request
   return NextResponse.json({
     teamId: team.teamNumber,
     role: team.roles.includes("member") ? "member" : "newbie",

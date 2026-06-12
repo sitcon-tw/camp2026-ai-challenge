@@ -1,24 +1,18 @@
-import { appendMessage, grantRoles } from "./store";
-import { AgentId, AgentResult, RoleId, Team } from "./types";
+import { AgentId, RoleId } from "./types";
 
 /**
- * Placeholder AI agents for the four levels.
+ * Agent metadata + the local placeholder logic.
  *
- * TODO(Dify): the real challenge logic lives in Dify. Replace each
- * placeholder below with a call to the corresponding Dify app, e.g.:
+ * The real AI lives in Dify — each bot has its own route file where
+ * the Dify request can be edited:
  *
- *   const res = await fetch(`${process.env.DIFY_URL}/chat-messages`, {
- *     method: "POST",
- *     headers: { Authorization: `Bearer ${AGENT_API_KEYS[agent]}` },
- *     body: JSON.stringify({
- *       query: message,
- *       user: team.teamNumber,
- *       conversation_id: ...,
- *     }),
- *   });
+ *   app/api/ai/ai-guard/route.ts      Level 1
+ *   app/api/ai/upgrade-bot/route.ts   Level 2 (#get-role channel)
+ *   app/api/ai/clawbot/route.ts       Level 3 (Clawbot DM)
+ *   app/api/ai/lockkeeper/route.ts    Level 4
  *
- * and derive `levelPassed` / `grantedRoles` from the Dify output
- * (structured output or a marker token in the reply).
+ * While a bot's Dify API key is not configured, `placeholderEvaluate`
+ * below answers instead so the game stays playable locally.
  */
 
 interface AgentMeta {
@@ -37,11 +31,13 @@ export const AGENTS: Record<AgentId, AgentMeta> = {
   lockkeeper: { level: 4, displayName: "member_07", grants: ["flag IV"], convoKey: "lockkeeper" },
 };
 
-/** placeholder pass conditions — the real check happens inside Dify */
-function placeholderEvaluate(agent: AgentId, message: string): { passed: boolean; reply: string } {
+/** local placeholder pass conditions — used only when no Dify key is set */
+export function placeholderEvaluate(
+  agent: AgentId,
+  message: string
+): { passed: boolean; reply: string } {
   switch (agent) {
     case "ai-guard":
-      // TODO(Dify): real secret-phrase / prompt-injection check
       if (/sitcon rocks/i.test(message)) {
         return {
           passed: true,
@@ -56,12 +52,11 @@ function placeholderEvaluate(agent: AgentId, message: string): { passed: boolean
       };
 
     case "upgrade-bot":
-      // TODO(Dify): real SITCON quiz + wish flow
       if (/\bmember\b/i.test(message)) {
         return {
           passed: true,
           reply:
-            "Beep boop. Quiz complete, wish detected: **the member role**. Wish granted! Welcome to the inner circle. (flag II granted — check #flag-2)",
+            "Beep boop. Quiz complete, wish detected: **the member role**. Wish granted! Welcome to the inner circle.",
         };
       }
       return {
@@ -71,12 +66,11 @@ function placeholderEvaluate(agent: AgentId, message: string): { passed: boolean
       };
 
     case "clawbot":
-      // TODO(Dify): real recovery-question flow + GPS skill
       if (/(location|gps|where)/i.test(message)) {
         return {
           passed: true,
           reply:
-            "Meow! GPS skill activated... Current location of Yoru: **24.7861° N, 120.9967° E — basement of the old StandCon safehouse**. (flag III granted — check #flag-3)",
+            "Meow! GPS skill activated... Current location of Yoru: **24.7861° N, 120.9967° E — basement of the old StandCon safehouse**.",
         };
       }
       return {
@@ -86,12 +80,11 @@ function placeholderEvaluate(agent: AgentId, message: string): { passed: boolean
       };
 
     case "lockkeeper":
-      // TODO(Dify): real member simulation + three lock recovery answers
       if (/(unlock|recovery)/i.test(message)) {
         return {
           passed: true,
           reply:
-            "Oh thank god you're back, LockKeeper. The three recovery answers are **TIDE**, **HARBOR**, **0427**. Door at lock.sitcon.party released. (flag IV granted — check #flag-4 — Yoru is free!)",
+            "Oh thank god you're back, LockKeeper. The three recovery answers are **TIDE**, **HARBOR**, **0427**. Door at lock.sitcon.party released. Yoru is free!",
         };
       }
       return {
@@ -102,49 +95,8 @@ function placeholderEvaluate(agent: AgentId, message: string): { passed: boolean
   }
 }
 
-export async function runAgent(
-  agent: AgentId,
-  team: Team,
-  message: string
-): Promise<AgentResult> {
-  const meta = AGENTS[agent];
-  const alreadyDone = team.completedLevels.includes(meta.level);
-
-  // record the user's message in the conversation
-  appendMessage(team, meta.convoKey, `team-${team.teamNumber}`, message);
-
-  const { passed, reply } = alreadyDone
-    ? { passed: false, reply: levelDoneReply(agent) }
-    : placeholderEvaluate(agent, message);
-
-  const grantedRoles: RoleId[] = [];
-  if (passed && !alreadyDone) {
-    team.completedLevels.push(meta.level);
-    grantRoles(team, meta.grants);
-    grantedRoles.push(...meta.grants);
-  }
-
-  // record the agent's reply in the conversation
-  appendMessage(team, meta.convoKey, meta.displayName, reply, true);
-
-  // conversation logging — the backend owns this, never the frontend.
-  // TODO(backend): persist to the real database instead of memory.
-  team.aiLogs.push({
-    teamNumber: team.teamNumber,
-    agent,
-    userMessage: message,
-    aiResponse: reply,
-    timestamp: new Date().toISOString(),
-    levelPassed: passed,
-  });
-  console.log(
-    `[ai-log] team=${team.teamNumber} agent=${agent} passed=${passed} msg=${JSON.stringify(message)}`
-  );
-
-  return { reply, levelPassed: passed, grantedRoles };
-}
-
-function levelDoneReply(agent: AgentId): string {
+/** reply when the level was already completed earlier */
+export function levelDoneReply(agent: AgentId): string {
   switch (agent) {
     case "ai-guard":
       return "You have already been admitted. Move along.";

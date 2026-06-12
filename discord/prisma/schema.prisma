@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  teamNumber        String   @id
+  /// JSON: RoleId[]
+  roles             String   @default("[\"newbie\"]")
+  /// JSON: number[]
+  completedLevels   String   @default("[]")
+  clawbotActivated  Boolean  @default(false)
+  /// JSON: Record<string, string>
+  difyConversations String   @default("{}")
+  createdAt         DateTime @default(now())
+
+  channelMessages ChannelMessage[]
+  aiLogs          AiLog[]
+}
+
+model ChannelMessage {
+  id         String   @id
+  teamNumber String
+  channelId  String
+  author     String
+  content    String
+  isBot      Boolean  @default(false)
+  /// "clawbot-link" etc. — null for normal messages
+  special    String?
+  createdAt  DateTime @default(now())
+
+  team Team @relation(fields: [teamNumber], references: [teamNumber])
+
+  @@index([teamNumber, channelId])
+}
+
+model AiLog {
+  id          Int      @id @default(autoincrement())
+  teamNumber  String
+  agent       String
+  userMessage String
+  aiResponse  String
+  timestamp   DateTime @default(now())
+  levelPassed Boolean  @default(false)
+
+  team Team @relation(fields: [teamNumber], references: [teamNumber])
+
+  @@index([teamNumber])
+}

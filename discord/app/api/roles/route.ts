@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTeam, grantRoles } from "@/lib/store";
+import { getTeam, grantRoles, removeRole } from "@/lib/store";
 import { RoleId } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -25,12 +25,12 @@ export async function POST(req: NextRequest) {
   const teamNumber = String(body?.teamNumber ?? "");
   const role = body?.role as RoleId;
 
-  const team = getTeam(teamNumber);
+  const team = await getTeam(teamNumber);
   if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
   if (!ALL_ROLES.includes(role)) {
     return NextResponse.json({ error: "unknown role", available: ALL_ROLES }, { status: 400 });
   }
-  grantRoles(team, [role]);
+  await grantRoles(team, [role]);
   return NextResponse.json({ teamNumber, roles: team.roles });
 }
 
@@ -39,8 +39,8 @@ export async function DELETE(req: NextRequest) {
   const teamNumber = String(body?.teamNumber ?? "");
   const role = body?.role as RoleId;
 
-  const team = getTeam(teamNumber);
+  const team = await getTeam(teamNumber);
   if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
-  team.roles = team.roles.filter((r) => r !== role);
+  await removeRole(team, role);
   return NextResponse.json({ teamNumber, roles: team.roles });
 }

@@ -61,11 +61,10 @@ export interface Team {
   teamNumber: string;
   roles: RoleId[];
   completedLevels: number[];
-  /** per-team messages keyed by channel/conversation id */
-  channelMessages: Record<string, Message[]>;
   /** Clawbot DM only exists after the player clicks its link */
   clawbotActivated: boolean;
-  aiLogs: AiLog[];
+  /** Dify conversation_id per agent — keeps multi-turn context */
+  difyConversations: Record<string, string>;
   createdAt: number;
 }
 

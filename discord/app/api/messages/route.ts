@@ -3,16 +3,11 @@ import { appendMessage, getChannel, getTeam, messagesFor, permFor } from "@/lib/
 
 export const dynamic = "force-dynamic";
 
-/**
- * GET /api/messages?teamNumber=&channelId=
- * Channel messages (static seed + per-team). 403 if the team only has
- * "s" (see-only) permission on the channel.
- */
 export async function GET(req: NextRequest) {
   const teamNumber = req.nextUrl.searchParams.get("teamNumber") ?? "";
   const channelId = req.nextUrl.searchParams.get("channelId") ?? "";
 
-  const team = getTeam(teamNumber);
+  const team = await getTeam(teamNumber);
   if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
   const channel = getChannel(channelId);
   if (!channel) return NextResponse.json({ error: "channel not found" }, { status: 404 });
@@ -24,21 +19,16 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ messages: messagesFor(team, channelId) });
+  return NextResponse.json({ messages: await messagesFor(team, channelId) });
 }
 
-/**
- * POST /api/messages  { teamNumber, channelId, content }
- * Posts to a normal writable channel. AI channels go through
- * POST /api/ai/:agent instead.
- */
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const teamNumber = String(body?.teamNumber ?? "");
   const channelId = String(body?.channelId ?? "");
   const content = String(body?.content ?? "").trim();
 
-  const team = getTeam(teamNumber);
+  const team = await getTeam(teamNumber);
   if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
   const channel = getChannel(channelId);
   if (!channel) return NextResponse.json({ error: "channel not found" }, { status: 404 });
@@ -57,6 +47,6 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const message = appendMessage(team, channelId, `team-${team.teamNumber}`, content);
+  const message = await appendMessage(team, channelId, `team-${team.teamNumber}`, content);
   return NextResponse.json({ message });
 }
