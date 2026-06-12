@@ -38,6 +38,52 @@ function formatTime(ts: number) {
   });
 }
 
+/** clickable bot-link card embedded in a message (Clawbot / LockKeeper) */
+function SpecialLinkCard({
+  special,
+  onClick,
+}: {
+  special: NonNullable<Message["special"]>;
+  onClick?: () => void;
+}) {
+  const card =
+    special === "lockkeeper-link"
+      ? {
+          bg: "#3ba55d",
+          icon: "🔐",
+          title: "LockKeeper — intercepted channel",
+          subtitle: "Emergency Recovery Mode · click to open the session",
+          cta: "Intercept",
+        }
+      : {
+          bg: "#f47b67",
+          icon: "🐾",
+          title: "Yoru's Clawbot",
+          subtitle: "External bot · click to open a DM",
+          cta: "Open",
+        };
+  return (
+    <button
+      onClick={onClick}
+      className="mt-2 flex w-full max-w-[400px] items-center gap-3 rounded-md border border-rail bg-sidebar p-3 text-left transition-colors duration-150 hover:border-blurple"
+    >
+      <div
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
+        style={{ background: card.bg }}
+      >
+        {card.icon}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="font-semibold text-header">{card.title}</div>
+        <div className="text-xs text-muted">{card.subtitle}</div>
+      </div>
+      <span className="shrink-0 rounded-sm bg-blurple px-3 py-1.5 text-xs font-medium text-white">
+        {card.cta}
+      </span>
+    </button>
+  );
+}
+
 export function MessageRow({
   msg,
   onSpecial,
@@ -67,23 +113,7 @@ export function MessageRow({
         <div className="break-words whitespace-pre-wrap text-normal">
           {renderContent(msg.content)}
         </div>
-        {msg.special === "clawbot-link" && (
-          <button
-            onClick={onSpecial}
-            className="mt-2 flex w-full max-w-[400px] items-center gap-3 rounded-md border border-rail bg-sidebar p-3 text-left transition-colors duration-150 hover:border-blurple"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f47b67] text-lg">
-              🐾
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="font-semibold text-header">Yoru&apos;s Clawbot</div>
-              <div className="text-xs text-muted">External bot · click to open a DM</div>
-            </div>
-            <span className="shrink-0 rounded-sm bg-blurple px-3 py-1.5 text-xs font-medium text-white">
-              Open
-            </span>
-          </button>
-        )}
+        {msg.special && <SpecialLinkCard special={msg.special} onClick={onSpecial} />}
       </div>
     </div>
   );

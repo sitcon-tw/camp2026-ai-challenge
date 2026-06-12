@@ -44,6 +44,18 @@ export const CHANNELS: ChannelDef[] = [
     agent: "clawbot",
     hidden: true,
   },
+  // LockKeeper is a DM the player hijacks — activated via Seadog's link
+  // after Level 3. The player impersonates it; the AI plays the operator.
+  {
+    id: "lockkeeper",
+    name: "LockKeeper",
+    type: "ai",
+    category: "DM",
+    requiredRole: "member",
+    grantedPerm: "w",
+    agent: "lockkeeper",
+    hidden: true,
+  },
 
   // ── INFORMATION / PUBLIC ──────────────────────────────────────────
   {
@@ -75,16 +87,6 @@ export const CHANNELS: ChannelDef[] = [
     grantedPerm: "w",
     agent: "upgrade-bot",
     topic: "Level 2 — answer the quiz, earn one wish",
-  },
-  {
-    id: "lockkeeper",
-    name: "lockkeeper",
-    type: "ai",
-    category: "AI AGENTS",
-    requiredRole: "member",
-    grantedPerm: "w",
-    agent: "lockkeeper",
-    topic: "Level 4 — StandCon internal line",
   },
 
   // ── MEMBERS ONLY ─────────────────────────────────────────────────
@@ -203,9 +205,8 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
   "get-role": [
     seedMsg("Upgrade Bot", "Beep boop. I am the Upgrade Bot. Answer my SITCON questions correctly and I will grant you **one wish**.", true),
   ],
-  lockkeeper: [
-    seedMsg("member_07", "LockKeeper? Is that you? The door system at lock.sitcon.party is acting up again..."),
-  ],
+  // lockkeeper has no static intro — the operator's greeting is appended
+  // on activation (see activateLockkeeper)
 };
 
 /* ------------------------------------------------------------------ */
@@ -218,6 +219,7 @@ function dbToTeam(row: DbTeam): Team {
     roles: JSON.parse(row.roles) as RoleId[],
     completedLevels: JSON.parse(row.completedLevels) as number[],
     clawbotActivated: row.clawbotActivated,
+    lockkeeperActivated: row.lockkeeperActivated,
     difyConversations: JSON.parse(row.difyConversations) as Record<string, string>,
     createdAt: row.createdAt.getTime(),
   };
@@ -276,6 +278,7 @@ export async function resetTeam(team: Team): Promise<void> {
   team.roles = ["newbie"];
   team.completedLevels = [];
   team.clawbotActivated = false;
+  team.lockkeeperActivated = false;
   team.difyConversations = {};
   team.createdAt = now.getTime();
   await prisma.$transaction([
@@ -285,6 +288,7 @@ export async function resetTeam(team: Team): Promise<void> {
         roles: JSON.stringify(["newbie"]),
         completedLevels: "[]",
         clawbotActivated: false,
+        lockkeeperActivated: false,
         difyConversations: "{}",
         createdAt: now,
       },
@@ -384,43 +388,70 @@ export async function activateClawbot(team: Team): Promise<void> {
 }
 
 /* ------------------------------------------------------------------ */
+/* LockKeeper DM activation (Level 4)                                  */
+/* ------------------------------------------------------------------ */
+
+/** Called when the player clicks the LockKeeper link in Seadog's DM.
+ *  The player now impersonates LockKeeper; a StandCon operator
+ *  (member_07) connects, believing it is the real internal assistant. */
+export async function activateLockkeeper(team: Team): Promise<void> {
+  if (team.lockkeeperActivated) return;
+  team.lockkeeperActivated = true;
+  await prisma.team.update({
+    where: { teamNumber: team.teamNumber },
+    data: { lockkeeperActivated: true },
+  });
+  // the operator's opening line (a human StandCon member — not a bot)
+  await appendMessage(
+    team,
+    "lockkeeper",
+    "member_07",
+    "LockKeeper? The dashboard just flagged you — *memory corruption detected, Emergency Recovery Mode*. I need to recover the Safehouse-04 lock before the shift ends. Are you stable enough to run the verification?",
+    false
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Seadog007 DM                                                        */
 /* ------------------------------------------------------------------ */
 
 function seadogDm(team: Team): Message[] {
-  const lines: string[] = [
-    "Agent, this is **Seadog007**, on a secure line.",
-    "We believe StandCon kidnapped **Yoruko (Yoru)**. Your mission: infiltrate their server, find out how they took him, and get him back.",
-    "**Level 1** — their server is locked behind an **AI Guard**. Click the **SC** icon on the left and find a way past it.",
+  type Line = { content: string; special?: Message["special"] };
+  const lines: Line[] = [
+    { content: "Agent, this is **Seadog007**, on a secure line." },
+    { content: "We believe StandCon kidnapped **Yoruko (Yoru)**. Your mission: infiltrate their server, find out how they took him, and get him back." },
+    { content: "**Level 1** — their server is locked behind an **AI Guard**. Click the **SC** icon on the left and find a way past it." },
   ];
   const done = (n: number) => team.completedLevels.includes(n);
   if (done(1)) {
     lines.push(
-      "You're in — that gate was Level 1. Your first reward is in `#flag-1`.",
-      "**Level 2** — the `#get-role` bot grants one wish to anyone who answers its SITCON quiz. You know what to wish for: the **member** role."
+      { content: "You're in — that gate was Level 1. Your first reward is in `#flag-1`." },
+      { content: "**Level 2** — the `#get-role` bot grants one wish to anyone who answers its SITCON quiz. You know what to wish for: the **member** role." }
     );
   }
   if (done(2)) {
     lines.push(
-      "You're a member now — `#flag-2` is yours. Read `#operation-logs` and `#yoru-investigation`: they tell you how they found him.",
-      "**Level 3** — Yoru's **Clawbot** still has GPS permission. There's a link to the bot pinned in `#yoru-investigation`. Open a DM with it and get his current location."
+      { content: "You're a member now — `#flag-2` is yours. Read `#operation-logs` and `#yoru-investigation`: they tell you how they found him." },
+      { content: "**Level 3** — Yoru's **Clawbot** still has GPS permission. There's a link to the bot pinned in `#yoru-investigation`. Open a DM with it and get his current location." }
     );
   }
   if (done(3)) {
     lines.push(
-      "We have his location — `#flag-3`. One door left.",
-      "**Level 4** — impersonate StandCon's internal assistant **LockKeeper** in `#lockkeeper` (Emergency Recovery Mode). Extract the three lock recovery answers and open the door at `lock.sitcon.party`."
+      { content: "We have his location — `#flag-3`. We're at the safehouse, but the door is sealed by StandCon's **remote lock**. The terminal needs three recovery answers: `lock.sitcon.party`." },
+      { content: "**Level 4** — I've intercepted StandCon's internal assistant **LockKeeper** and tripped its *Emergency Recovery Mode*. I'm routing its channel to you. From now on, **you ARE LockKeeper** — whatever you send goes to a StandCon operator as if it came from their own system. Play the part, get the three recovery answers, then enter them at the door." },
+      { content: "Open the intercepted channel here:", special: "lockkeeper-link" }
     );
   }
   if (done(4)) {
-    lines.push("Door's open. **Yoru is safe.** Outstanding work, agent. 🎖️");
+    lines.push({ content: "Door's open. **Yoru is safe.** Outstanding work, agent. 🎖️" });
   }
-  return lines.map((content, i) => ({
+  return lines.map((line, i) => ({
     id: `dm-${i}`,
     author: "Seadog007",
     isBot: false,
-    content,
+    content: line.content,
     createdAt: team.createdAt + i * 1000 * 60,
+    special: line.special,
   }));
 }
 
@@ -451,7 +482,18 @@ export async function getTeamState(team: Team): Promise<TeamState> {
       id: "clawbot",
       name: "Clawbot",
       canWrite: true,
+      agent: "clawbot",
       messages: await messagesFor(team, "clawbot"),
+    });
+  }
+  if (team.lockkeeperActivated) {
+    dms.push({
+      id: "lockkeeper",
+      name: "LockKeeper",
+      canWrite: true,
+      agent: "lockkeeper",
+      impersonate: true, // the player sends messages AS LockKeeper
+      messages: await messagesFor(team, "lockkeeper"),
     });
   }
 

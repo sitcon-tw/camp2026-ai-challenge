@@ -44,8 +44,8 @@ export interface Message {
   isBot: boolean;
   content: string;
   createdAt: number;
-  /** special render: an embedded link card (e.g. the Clawbot bot link) */
-  special?: "clawbot-link";
+  /** special render: an embedded link card (Clawbot / LockKeeper bot link) */
+  special?: "clawbot-link" | "lockkeeper-link";
 }
 
 export interface AiLog {
@@ -63,6 +63,8 @@ export interface Team {
   completedLevels: number[];
   /** Clawbot DM only exists after the player clicks its link */
   clawbotActivated: boolean;
+  /** LockKeeper DM (Level 4) — opens after the player clicks Seadog's link */
+  lockkeeperActivated: boolean;
   /** Dify conversation_id per agent — keeps multi-turn context */
   difyConversations: Record<string, string>;
   createdAt: number;
@@ -82,10 +84,14 @@ export interface ClientChannel {
 
 /** a direct-message conversation shown in the home view */
 export interface DmConvo {
-  id: "seadog007" | "clawbot";
+  id: "seadog007" | "clawbot" | "lockkeeper";
   name: string;
-  /** Seadog007 is read-only; Clawbot is a live AI chat */
+  /** Seadog007 is read-only; Clawbot and LockKeeper are live AI chats */
   canWrite: boolean;
+  /** which agent endpoint this DM posts to (writable AI DMs only) */
+  agent?: AgentId;
+  /** the player speaks AS this bot (impersonation) — LockKeeper inversion */
+  impersonate?: boolean;
   messages: Message[];
 }
 

@@ -173,6 +173,21 @@ export default function DiscordApp() {
     }
   }
 
+  async function activateLockkeeper() {
+    const res = await fetch("/api/dm/lockkeeper/activate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ teamNumber }),
+    });
+    if (res.ok) {
+      applyState((await res.json()).state);
+      // jump straight into the intercepted channel so the inversion is clear
+      setView("home");
+      setSelectedDm("lockkeeper");
+      pushToast("🔐 LockKeeper channel intercepted — you are now impersonating it.");
+    }
+  }
+
   return (
     <div className="flex h-full">
       {/* ── server rail ─────────────────────────────────────────── */}
@@ -339,6 +354,7 @@ export default function DiscordApp() {
             teamNumber={state.teamNumber}
             dm={currentDm}
             onRefresh={() => loadState(state.teamNumber)}
+            onSpecial={activateLockkeeper}
           />
         ) : null
       ) : !gatePassed ? (

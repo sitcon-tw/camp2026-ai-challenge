@@ -52,11 +52,20 @@ export async function handleAgentRequest(
       { status: 403 }
     );
   }
+  if (agentId === "lockkeeper" && !team.lockkeeperActivated) {
+    return NextResponse.json(
+      { error: "The LockKeeper channel has not been intercepted yet." },
+      { status: 403 }
+    );
+  }
 
   const meta = AGENTS[agentId];
   const alreadyDone = team.completedLevels.includes(meta.level);
 
-  await appendMessage(team, meta.convoKey, `team-${team.teamNumber}`, message);
+  // record the player's message — LockKeeper inverts the identity so the
+  // player's message is shown AS the bot they are impersonating
+  const userAuthor = meta.userAlias ?? `team-${team.teamNumber}`;
+  await appendMessage(team, meta.convoKey, userAuthor, message, meta.userIsBot ?? false);
 
   let reply: string;
   let passed = false;
@@ -88,13 +97,14 @@ export async function handleAgentRequest(
   }
 
   const grantedRoles: RoleId[] = [];
-  if (passed && !alreadyDone) {
+  if (passed && !alreadyDone && (meta.grantsViaBot ?? true)) {
     await markLevelCompleted(team, meta.level);
     await grantRoles(team, meta.grants);
     grantedRoles.push(...meta.grants);
   }
 
-  await appendMessage(team, meta.convoKey, meta.displayName, reply, true);
+  // record the AI's reply (the LockKeeper operator is a human → not a bot)
+  await appendMessage(team, meta.convoKey, meta.displayName, reply, meta.replyIsBot ?? true);
 
   await prisma.aiLog.create({
     data: {

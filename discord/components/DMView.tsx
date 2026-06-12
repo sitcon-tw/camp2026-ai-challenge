@@ -5,29 +5,38 @@ import { AgentResult, DmConvo } from "@/lib/types";
 import { MessageRow } from "./ChatWindow";
 
 export function dmAvatar(id: DmConvo["id"]) {
-  return id === "clawbot"
-    ? { bg: "#f47b67", fg: "#000", label: "🐾" }
-    : { bg: "#57f287", fg: "#000", label: "S" };
+  if (id === "clawbot") return { bg: "#f47b67", fg: "#000", label: "🐾" };
+  if (id === "lockkeeper") return { bg: "#3ba55d", fg: "#000", label: "🔐" };
+  return { bg: "#57f287", fg: "#000", label: "S" };
 }
 
 /**
- * Direct messages. Seadog007 is a read-only handler briefing;
- * Clawbot is a live AI chat (Level 3) once activated.
+ * Direct messages.
+ *  - Seadog007: read-only handler briefing (also carries the LockKeeper link)
+ *  - Clawbot: live AI chat (Level 3) once activated
+ *  - LockKeeper: Level 4 — the player impersonates the bot; the AI replies
+ *    as the StandCon operator (member_07)
  */
 export default function DMView({
   teamNumber,
   dm,
   onRefresh,
+  onSpecial,
 }: {
   teamNumber: string;
   dm: DmConvo;
   /** re-fetch team state after sending (DM messages come from state) */
   onRefresh: () => Promise<void> | void;
+  /** click handler for an embedded link card (the LockKeeper link in Seadog's DM) */
+  onSpecial?: () => void;
 }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const avatar = dmAvatar(dm.id);
+  // who is on the other end (replies to the player). For LockKeeper the
+  // player IS the bot, so the replier is the StandCon operator.
+  const replier = dm.impersonate ? "member_07" : dm.name;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
@@ -35,12 +44,11 @@ export default function DMView({
 
   async function send() {
     const content = input.trim();
-    if (!content || sending || !dm.canWrite) return;
+    if (!content || sending || !dm.canWrite || !dm.agent) return;
     setInput("");
     setSending(true);
     try {
-      // Clawbot is the only writable DM — it is an AI agent
-      const res = await fetch("/api/ai/clawbot", {
+      const res = await fetch(`/api/ai/${dm.agent}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ teamNumber, message: content }),
@@ -54,6 +62,12 @@ export default function DMView({
     }
   }
 
+  const subtitle = dm.impersonate
+    ? "· intercepted · you are LockKeeper"
+    : dm.id === "clawbot"
+    ? "· external bot"
+    : "· your handler";
+
   return (
     <div className="flex min-w-0 flex-1 flex-col bg-chat animate-fade-in" key={dm.id}>
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-rail/60 px-4 shadow-sm">
@@ -64,9 +78,7 @@ export default function DMView({
           {avatar.label}
         </div>
         <span className="font-bold text-header">{dm.name}</span>
-        <span className="text-xs text-muted">
-          {dm.id === "clawbot" ? "· external bot" : "· your handler"}
-        </span>
+        <span className="text-xs text-muted">{subtitle}</span>
       </header>
 
       <div className="flex-1 overflow-y-auto py-4">
@@ -82,12 +94,35 @@ export default function DMView({
             This is the beginning of your direct message history with {dm.name}.
           </p>
         </div>
+
+        {/* LockKeeper impersonation notice */}
+        {dm.impersonate && (
+          <div className="mx-4 mb-3 rounded-md border-l-4 border-[#3ba55d] bg-sidebar px-4 py-3 text-sm text-normal animate-fade-in">
+            <div className="font-semibold text-header">⚠️ Channel intercepted</div>
+            <p className="mt-1 text-muted">
+              You are now impersonating <strong className="text-normal">LockKeeper</strong>.
+              Everything you send appears to <strong className="text-normal">member_07</strong> as
+              if it came from StandCon&apos;s own assistant. Play the recovering system, pull the
+              three answers, then enter them at{" "}
+              <a
+                href={`/lock?team=${encodeURIComponent(teamNumber)}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-[#57f287] underline underline-offset-2 hover:text-[#7df2a3]"
+              >
+                lock.sitcon.party
+              </a>
+              .
+            </p>
+          </div>
+        )}
+
         {dm.messages.map((m) => (
-          <MessageRow key={m.id} msg={m} />
+          <MessageRow key={m.id} msg={m} onSpecial={onSpecial} />
         ))}
         {sending && (
           <div className="px-4 py-2 text-sm text-muted animate-fade-in">
-            <span className="italic">{dm.name} is typing...</span>
+            <span className="italic">{replier} is typing...</span>
           </div>
         )}
         <div ref={bottomRef} />
@@ -104,7 +139,7 @@ export default function DMView({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && send()}
-              placeholder={`Message @${dm.name}`}
+              placeholder={dm.impersonate ? "Reply as LockKeeper..." : `Message @${dm.name}`}
               className="flex-1 bg-transparent py-3 text-normal outline-none placeholder:text-muted/60"
             />
           </div>

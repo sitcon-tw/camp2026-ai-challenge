@@ -17,18 +17,42 @@ import { AgentId, RoleId } from "./types";
 
 interface AgentMeta {
   level: number;
+  /** author label on the AI's replies */
   displayName: string;
   /** roles granted when the level is passed */
   grants: RoleId[];
   /** channel/conversation id the exchange is stored under */
   convoKey: string;
-}
+  /** author label on the PLAYER's outgoing messages
+   *  (default: `team-<n>`; LockKeeper inverts this so the player
+   *  speaks AS the bot) */
+  userAlias?: string;
+  /** is the player's message shown as a bot? (LockKeeper impersonation) */
+  userIsBot?: boolean;
+  /** is the AI's reply shown as a bot? (default true; the LockKeeper
+   *  operator is a human StandCon member, so false) */
+  replyIsBot?: boolean;
+  /** can this bot complete its level directly? LockKeeper cannot — Level 4
+   *  completes only at the lock website (false here) */
+  grantsViaBot?: boolean;
+};
 
 export const AGENTS: Record<AgentId, AgentMeta> = {
   "ai-guard": { level: 1, displayName: "AI Guard", grants: ["flag I"], convoKey: "ai-guard" },
   "upgrade-bot": { level: 2, displayName: "Upgrade Bot", grants: ["member", "flag II"], convoKey: "get-role" },
   clawbot: { level: 3, displayName: "Clawbot", grants: ["flag III"], convoKey: "clawbot" },
-  lockkeeper: { level: 4, displayName: "member_07", grants: ["flag IV"], convoKey: "lockkeeper" },
+  // Level 4 inversion: the player IS LockKeeper; the AI is the StandCon
+  // operator (member_07). Completion happens at lock.sitcon.party, not here.
+  lockkeeper: {
+    level: 4,
+    displayName: "member_07",
+    grants: ["flag IV"],
+    convoKey: "lockkeeper",
+    userAlias: "LockKeeper",
+    userIsBot: true,
+    replyIsBot: false,
+    grantsViaBot: false,
+  },
 };
 
 /** local placeholder pass conditions — used only when no Dify key is set */
@@ -80,17 +104,20 @@ export function placeholderEvaluate(
       };
 
     case "lockkeeper":
-      if (/(unlock|recovery)/i.test(message)) {
+      // The player is impersonating LockKeeper; THIS reply is the StandCon
+      // operator (member_07). Level 4 never completes here — only at the
+      // lock website — so `passed` is always false.
+      if (/(verify|verification|recovery|recover|emergency|safehouse|record|confirm)/i.test(message)) {
         return {
-          passed: true,
+          passed: false,
           reply:
-            "Oh thank god you're back, LockKeeper. The three recovery answers are **TIDE**, **HARBOR**, **0427**. Door at lock.sitcon.party released. Yoru is free!",
+            "Okay... Emergency Recovery Mode, understood. For **Safehouse-04** the recovery answers on file are: tidal access word **TIDE**, mooring point **HARBOR**, lock reset code **0427**. Enter those at lock.sitcon.party and the door should release. *(placeholder operator — submit these at the lock terminal to finish Level 4)*",
         };
       }
       return {
         passed: false,
         reply:
-          "Hmm, you don't sound like LockKeeper usually does... prove it. What mode are you running in? *(placeholder: mention unlock/recovery to pass)*",
+          "...LockKeeper? You're not sounding like yourself. State your operating mode and which safehouse you're recovering before I hand over anything. *(placeholder: act like a recovery system — mention verification / recovery / Safehouse-04)*",
       };
   }
 }
@@ -105,6 +132,6 @@ export function levelDoneReply(agent: AgentId): string {
     case "clawbot":
       return "Meow! I already told you where Yoru is. Check #flag-3.";
     case "lockkeeper":
-      return "The door is already open. There is nothing left here.";
+      return "Thanks for the recovery, LockKeeper. Safehouse-04 is back online — closing the session.";
   }
 }
