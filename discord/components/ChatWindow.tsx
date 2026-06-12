@@ -1,0 +1,260 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import { AgentResult, ClientChannel, Message } from "@/lib/types";
+import { channelIcon, LockIcon } from "./icons";
+
+function renderContent(text: string) {
+  // minimal markdown: **bold** and `code`
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return parts.map((p, i) => {
+    if (p.startsWith("**") && p.endsWith("**")) {
+      return <strong key={i}>{p.slice(2, -2)}</strong>;
+    }
+    if (p.startsWith("`") && p.endsWith("`")) {
+      return (
+        <code key={i} className="rounded bg-rail px-1 py-0.5 font-mono text-[0.85em]">
+          {p.slice(1, -1)}
+        </code>
+      );
+    }
+    return p;
+  });
+}
+
+function avatarColor(name: string) {
+  const colors = ["#5865f2", "#57f287", "#fee75c", "#eb459e", "#ed4245", "#f47b67"];
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return colors[h % colors.length];
+}
+
+function formatTime(ts: number) {
+  return new Date(ts).toLocaleString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export function MessageRow({
+  msg,
+  onSpecial,
+}: {
+  msg: Message;
+  /** click handler for embedded link cards (e.g. the Clawbot bot link) */
+  onSpecial?: () => void;
+}) {
+  return (
+    <div className="group flex gap-4 px-4 py-1.5 hover:bg-chathover animate-fade-in-up transition-colors duration-100">
+      <div
+        className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+        style={{ background: avatarColor(msg.author) }}
+      >
+        {msg.author[0]?.toUpperCase()}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-baseline gap-2">
+          <span className="font-medium text-header">{msg.author}</span>
+          {msg.isBot && (
+            <span className="rounded bg-blurple px-1 py-px text-[10px] font-semibold text-white">
+              BOT
+            </span>
+          )}
+          <span className="text-xs text-muted">{formatTime(msg.createdAt)}</span>
+        </div>
+        <div className="break-words whitespace-pre-wrap text-normal">
+          {renderContent(msg.content)}
+        </div>
+        {msg.special === "clawbot-link" && (
+          <button
+            onClick={onSpecial}
+            className="mt-2 flex w-full max-w-[400px] items-center gap-3 rounded-md border border-rail bg-sidebar p-3 text-left transition-colors duration-150 hover:border-blurple"
+          >
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f47b67] text-lg">
+              🐾
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-header">Yoru&apos;s Clawbot</div>
+              <div className="text-xs text-muted">External bot · click to open a DM</div>
+            </div>
+            <span className="shrink-0 rounded-sm bg-blurple px-3 py-1.5 text-xs font-medium text-white">
+              Open
+            </span>
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function LockedChannelNotice({ channel }: { channel: ClientChannel }) {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center animate-fade-in">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-input">
+        <LockIcon className="scale-[2] text-muted" />
+      </div>
+      {channel.flagLevel ? (
+        <>
+          <p className="font-semibold text-header">This flag channel is locked.</p>
+          <p className="text-sm text-muted">
+            Complete the corresponding level to unlock it.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="font-semibold text-header">
+            You do not have permission to read this channel.
+          </p>
+          <p className="text-sm text-muted">
+            Required role: <code className="rounded bg-input px-1.5 py-0.5 font-mono text-normal">{channel.requiredRole}</code>
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function ChatWindow({
+  teamNumber,
+  channel,
+  onAgentResult,
+  onClawbotLink,
+}: {
+  teamNumber: string;
+  channel: ClientChannel;
+  onAgentResult: (result: AgentResult) => void;
+  /** the Clawbot link in #yoru-investigation was clicked */
+  onClawbotLink?: () => void;
+}) {
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState("");
+  const [sending, setSending] = useState(false);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const Icon = channelIcon(channel);
+  const locked = channel.perm === "s";
+  const canWrite = channel.perm === "w";
+
+  const load = useCallback(async () => {
+    if (locked) return;
+    const res = await fetch(
+      `/api/messages?teamNumber=${encodeURIComponent(teamNumber)}&channelId=${channel.id}`
+    );
+    if (res.ok) {
+      const data = await res.json();
+      setMessages(data.messages ?? []);
+    }
+  }, [teamNumber, channel.id, locked]);
+
+  useEffect(() => {
+    setMessages([]);
+    load();
+    const t = setInterval(load, 3000);
+    return () => clearInterval(t);
+  }, [load]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "instant" });
+  }, [messages.length, sending]);
+
+  async function send() {
+    const content = input.trim();
+    if (!content || sending) return;
+    setInput("");
+    setSending(true);
+    try {
+      if (channel.type === "ai" && channel.agent) {
+        // AI channel → dedicated agent endpoint (backend handles Dify + logging)
+        const res = await fetch(`/api/ai/${channel.agent}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ teamNumber, message: content }),
+        });
+        if (res.ok) {
+          const data: AgentResult = await res.json();
+          await load();
+          if (data.levelPassed) onAgentResult(data);
+        }
+      } else {
+        await fetch("/api/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ teamNumber, channelId: channel.id, content }),
+        });
+        await load();
+      }
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="flex min-w-0 flex-1 flex-col bg-chat animate-fade-in">
+      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-rail/60 px-4 shadow-sm">
+        <Icon className="shrink-0 text-muted" />
+        <span className="font-bold whitespace-nowrap text-header">{channel.name}</span>
+        {channel.topic && !locked && (
+          <>
+            <div className="mx-2 h-5 w-px bg-muted/30" />
+            <span className="truncate text-sm text-muted">{channel.topic}</span>
+          </>
+        )}
+        {locked && <LockIcon className="ml-1 text-muted" />}
+      </header>
+
+      {locked ? (
+        <LockedChannelNotice channel={channel} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto py-4">
+            <div className="px-4 pb-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-input">
+                <Icon className="scale-150 text-header" />
+              </div>
+              <h3 className="mt-2 text-2xl font-bold text-header">
+                Welcome to #{channel.name}
+              </h3>
+              <p className="text-sm text-muted">This is the start of #{channel.name}.</p>
+            </div>
+            {messages.map((m) => (
+              <MessageRow key={m.id} msg={m} onSpecial={onClawbotLink} />
+            ))}
+            {sending && channel.type === "ai" && (
+              <div className="px-4 py-2 text-sm text-muted animate-fade-in">
+                <span className="italic">thinking...</span>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          <div className="px-4 pb-6">
+            {canWrite ? (
+              <div
+                className={`flex items-center rounded-lg bg-input px-4 transition-opacity duration-150 ${
+                  sending ? "animate-send-pop opacity-70" : "opacity-100"
+                }`}
+              >
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && send()}
+                  placeholder={
+                    channel.type === "ai"
+                      ? `Message ${channel.name}...`
+                      : `Message #${channel.name}`
+                  }
+                  className="flex-1 bg-transparent py-3 text-normal outline-none placeholder:text-muted/60"
+                />
+              </div>
+            ) : (
+              <div className="rounded-lg bg-input/50 px-4 py-3 text-sm text-muted">
+                You do not have permission to send messages in this channel.
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
