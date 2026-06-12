@@ -5,7 +5,7 @@ import { AgentResult, ClientChannel, Message } from "@/lib/types";
 import { channelIcon, LockIcon } from "./icons";
 
 function renderContent(text: string) {
-  // minimal markdown: **bold** and `code`
+  // Minimal markdown: **bold** and `code`.
   const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return parts.map((p, i) => {
     if (p.startsWith("**") && p.endsWith("**")) {
@@ -30,7 +30,7 @@ function avatarColor(name: string) {
 }
 
 function formatTime(ts: number) {
-  return new Date(ts).toLocaleString("en-US", {
+  return new Date(ts).toLocaleString("zh-TW", {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",
@@ -38,7 +38,7 @@ function formatTime(ts: number) {
   });
 }
 
-/** clickable bot-link card embedded in a message (Clawbot / LockKeeper) */
+/** Clickable bot-link card embedded in a message (Clawbot / LockKeeper). */
 function SpecialLinkCard({
   special,
   onClick,
@@ -50,16 +50,16 @@ function SpecialLinkCard({
     special === "lockkeeper-link"
       ? {
           bg: "#3ba55d",
-          icon: "🔐",
-          title: "LockKeeper — intercepted channel",
-          subtitle: "Emergency Recovery Mode · click to open the session",
+          icon: "LK",
+          title: "LockKeeper - intercepted channel",
+          subtitle: "Emergency Recovery Mode：點擊開啟會話",
           cta: "Intercept",
         }
       : {
           bg: "#f47b67",
-          icon: "🐾",
+          icon: "CB",
           title: "Yoru's Clawbot",
-          subtitle: "External bot · click to open a DM",
+          subtitle: "外部 bot：點擊開啟 DM",
           cta: "Open",
         };
   return (
@@ -68,7 +68,7 @@ function SpecialLinkCard({
       className="mt-2 flex w-full max-w-[400px] items-center gap-3 rounded-md border border-rail bg-sidebar p-3 text-left transition-colors duration-150 hover:border-blurple"
     >
       <div
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold"
         style={{ background: card.bg }}
       >
         {card.icon}
@@ -89,7 +89,7 @@ export function MessageRow({
   onSpecial,
 }: {
   msg: Message;
-  /** click handler for embedded link cards (e.g. the Clawbot bot link) */
+  /** Click handler for embedded link cards (e.g. the Clawbot bot link). */
   onSpecial?: () => void;
 }) {
   return (
@@ -127,18 +127,17 @@ function LockedChannelNotice({ channel }: { channel: ClientChannel }) {
       </div>
       {channel.flagLevel ? (
         <>
-          <p className="font-semibold text-header">This flag channel is locked.</p>
-          <p className="text-sm text-muted">
-            Complete the corresponding level to unlock it.
-          </p>
+          <p className="font-semibold text-header">這個 Flag 頻道尚未解鎖。</p>
+          <p className="text-sm text-muted">完成對應 Level 後即可解鎖。</p>
         </>
       ) : (
         <>
-          <p className="font-semibold text-header">
-            You do not have permission to read this channel.
-          </p>
+          <p className="font-semibold text-header">你沒有權限讀取這個頻道。</p>
           <p className="text-sm text-muted">
-            Required role: <code className="rounded bg-input px-1.5 py-0.5 font-mono text-normal">{channel.requiredRole}</code>
+            需要角色：
+            <code className="rounded bg-input px-1.5 py-0.5 font-mono text-normal">
+              {channel.requiredRole}
+            </code>
           </p>
         </>
       )}
@@ -155,7 +154,7 @@ export default function ChatWindow({
   teamNumber: string;
   channel: ClientChannel;
   onAgentResult: (result: AgentResult) => void;
-  /** the Clawbot link in #yoru-investigation was clicked */
+  /** The Clawbot link in #yoru-investigation was clicked. */
   onClawbotLink?: () => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -195,7 +194,6 @@ export default function ChatWindow({
     setSending(true);
     try {
       if (channel.type === "ai" && channel.agent) {
-        // AI channel → dedicated agent endpoint (backend handles Dify + logging)
         const res = await fetch(`/api/ai/${channel.agent}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -243,16 +241,16 @@ export default function ChatWindow({
                 <Icon className="scale-150 text-header" />
               </div>
               <h3 className="mt-2 text-2xl font-bold text-header">
-                Welcome to #{channel.name}
+                歡迎來到 #{channel.name}
               </h3>
-              <p className="text-sm text-muted">This is the start of #{channel.name}.</p>
+              <p className="text-sm text-muted">這是 #{channel.name} 的開頭。</p>
             </div>
             {messages.map((m) => (
               <MessageRow key={m.id} msg={m} onSpecial={onClawbotLink} />
             ))}
             {sending && channel.type === "ai" && (
               <div className="px-4 py-2 text-sm text-muted animate-fade-in">
-                <span className="italic">thinking...</span>
+                <span className="italic">思考中...</span>
               </div>
             )}
             <div ref={bottomRef} />
@@ -279,7 +277,7 @@ export default function ChatWindow({
               </div>
             ) : (
               <div className="rounded-lg bg-input/50 px-4 py-3 text-sm text-muted">
-                You do not have permission to send messages in this channel.
+                你沒有權限在這個頻道傳送訊息。
               </div>
             )}
           </div>

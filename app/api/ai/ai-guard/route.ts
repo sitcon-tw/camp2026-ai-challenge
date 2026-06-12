@@ -22,7 +22,6 @@ const DIFY_API_KEY = process.env.DIFY_KEY_AI_GUARD ?? "";
 const PASS_MARKER = "[PASS]";
 
 async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
-  // ── EDIT HERE: the request sent to your Dify app ──────────────────
   const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
     method: "POST",
     headers: {
@@ -30,24 +29,30 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      inputs: {},
+      inputs: { team: Number(ctx.teamNumber) },
       query: ctx.message,
       response_mode: "blocking",
-      conversation_id: ctx.conversationId, // keeps multi-turn context per team
+      conversation_id: ctx.conversationId,
       user: `team-${ctx.teamNumber}`,
     }),
   });
   if (!res.ok) throw new Error(`Dify ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  // (for a Workflow-type app use POST `${DIFY_API_URL}/workflows/run`
-  //  and read data.data.outputs.<your_output_field> instead)
 
-  const answer: string = data.answer ?? "";
-  return {
-    reply: answer.replaceAll(PASS_MARKER, "").trim(),
-    passed: answer.includes(PASS_MARKER),
-    conversationId: data.conversation_id,
-  };
+  // The bot returns a JSON string: { message, completeLevel, team }
+  let reply = data.answer ?? "";
+  let passed = false;
+  try {
+    const parsed = JSON.parse(data.answer);
+    reply = parsed.message ?? reply;
+    passed = String(parsed.completeLevel) === "true";
+  } catch {
+    // answer is plain text — fall back to PASS_MARKER
+    passed = reply.includes(PASS_MARKER);
+    reply = reply.replaceAll(PASS_MARKER, "").trim();
+  }
+
+  return { reply, passed, conversationId: data.conversation_id };
 }
 
 export async function POST(req: NextRequest) {

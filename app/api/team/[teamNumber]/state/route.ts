@@ -10,7 +10,7 @@ export async function GET(
   const { teamNumber } = await params;
   const team = await getTeam(teamNumber);
   if (!team) {
-    return NextResponse.json({ error: "team not found" }, { status: 404 });
+    return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
   }
   return NextResponse.json(await getTeamState(team));
 }

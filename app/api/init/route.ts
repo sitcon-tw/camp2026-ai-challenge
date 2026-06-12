@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const teamNumber = String(body?.teamNumber ?? "").trim();
   if (!teamNumber) {
-    return NextResponse.json({ error: "teamNumber is required" }, { status: 400 });
+    return NextResponse.json({ error: "請輸入 teamNumber。" }, { status: 400 });
   }
 
   const team = await initTeam(teamNumber);

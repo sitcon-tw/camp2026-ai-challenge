@@ -8,12 +8,12 @@ export async function POST(req: NextRequest) {
   const teamNumber = String(body?.teamNumber ?? "");
 
   const team = await getTeam(teamNumber);
-  if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
+  if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
 
   const source = getChannel("yoru-investigation");
   if (!source || permFor(team, source) === "s") {
     return NextResponse.json(
-      { error: "You do not have permission to use this link." },
+      { error: "你沒有權限使用這個連結。" },
       { status: 403 }
     );
   }

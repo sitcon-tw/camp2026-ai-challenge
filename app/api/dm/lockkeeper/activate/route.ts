@@ -14,12 +14,12 @@ export async function POST(req: NextRequest) {
   const teamNumber = String(body?.teamNumber ?? "");
 
   const team = await getTeam(teamNumber);
-  if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
+  if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
 
   // the link is only sent after Level 3 — guard it server-side too
   if (!team.completedLevels.includes(3)) {
     return NextResponse.json(
-      { error: "Find Yoru's location (Level 3) before the channel can be intercepted." },
+      { error: "請先找到 Yoru 的位置（Level 3），才能攔截這個 channel。" },
       { status: 403 }
     );
   }

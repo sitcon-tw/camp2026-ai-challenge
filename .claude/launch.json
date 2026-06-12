@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "discord-dev",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "discord", "run", "dev"],
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["run", "dev"],
       "port": 3000,
       "autoPort": true
     }

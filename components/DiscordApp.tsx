@@ -25,7 +25,7 @@ export default function DiscordApp() {
   const [selectedDm, setSelectedDm] = useState<string>("seadog007");
   const [showProfile, setShowProfile] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
-  // last-seen message count per DM (for the unread red dots)
+  // Last-seen message count per DM (for the unread red dots).
   const [seen, setSeen] = useState<Record<string, number>>({});
   const prevState = useRef<TeamState | null>(null);
   const toastSeq = useRef(0);
@@ -36,18 +36,18 @@ export default function DiscordApp() {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 6000);
   }
 
-  /** progress notifications: diff completed levels / roles between polls */
+  /** Progress notifications: diff completed levels / roles between polls. */
   const applyState = useCallback((next: TeamState) => {
     const prev = prevState.current;
     if (prev) {
       for (const lvl of next.completedLevels) {
         if (!prev.completedLevels.includes(lvl)) {
-          pushToast(`Level ${lvl} completed. Flag ${ROMAN[lvl - 1]} channel unlocked.`);
-          if (lvl === 4) pushToast("Door unlocked. Yoru rescued. 🎉");
+          pushToast(`Level ${lvl} 完成。Flag ${ROMAN[lvl - 1]} 頻道已解鎖。`);
+          if (lvl === 4) pushToast("門鎖已解除。Yoru 已救出。");
         }
       }
       if (!prev.roles.includes("member") && next.roles.includes("member")) {
-        pushToast("Role updated: member — new channels unlocked.");
+        pushToast("Role 更新：member。新頻道已解鎖。");
       }
     }
     prevState.current = next;
@@ -60,7 +60,7 @@ export default function DiscordApp() {
       if (res.ok) {
         applyState(await res.json());
       } else if (res.status === 404) {
-        // server restarted and lost the in-memory team — re-init silently
+        // Server restarted and lost the in-memory team; re-init silently.
         const init = await fetch("/api/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -72,7 +72,7 @@ export default function DiscordApp() {
     [applyState]
   );
 
-  // bootstrap from localStorage
+  // Bootstrap from localStorage.
   useEffect(() => {
     const saved = localStorage.getItem("standcon-team");
     setTeamNumber(saved || null);
@@ -85,7 +85,7 @@ export default function DiscordApp() {
     }
   }, []);
 
-  // poll team state so roles / channels / DMs refresh automatically
+  // Poll team state so roles / channels / DMs refresh automatically.
   useEffect(() => {
     if (!teamNumber) return;
     loadState(teamNumber);
@@ -107,7 +107,7 @@ export default function DiscordApp() {
     [teamNumber]
   );
 
-  // while a DM is open, anything that arrives in it counts as read
+  // While a DM is open, anything that arrives in it counts as read.
   useEffect(() => {
     if (view !== "home" || !state) return;
     const dm = state.dms.find((d) => d.id === selectedDm);
@@ -115,7 +115,7 @@ export default function DiscordApp() {
   }, [view, selectedDm, state, markSeen]);
 
   if (teamNumber === undefined) {
-    return <div className="flex h-full items-center justify-center text-muted">Loading...</div>;
+    return <div className="flex h-full items-center justify-center text-muted">載入中...</div>;
   }
 
   if (teamNumber === null) {
@@ -132,11 +132,11 @@ export default function DiscordApp() {
   }
 
   if (!state) {
-    return <div className="flex h-full items-center justify-center text-muted">Connecting...</div>;
+    return <div className="flex h-full items-center justify-center text-muted">連線中...</div>;
   }
 
   // Level 1: the server stays locked behind the AI Guard, but the rail
-  // and DMs remain usable — the gate shows when the server is clicked
+  // and DMs remain usable; the gate shows when the server is clicked.
   const gatePassed = state.completedLevels.includes(1);
 
   const selected = state.channels.find((c) => c.id === selectedId) ?? null;
@@ -150,15 +150,15 @@ export default function DiscordApp() {
     });
     if (!res.ok) return;
     const fresh: TeamState = (await res.json()).state;
-    // reset client-side traces: unread tracking + UI position
+    // Reset client-side traces: unread tracking + UI position.
     localStorage.removeItem(`standcon-seen-${teamNumber}`);
     setSeen({});
     setSelectedId(null);
     setSelectedDm("seadog007");
     setView("home");
-    prevState.current = fresh; // skip progress-diff toasts for the wipe
+    prevState.current = fresh; // Skip progress-diff toasts for the wipe.
     setState(fresh);
-    pushToast("Challenge restarted. Good luck, agent.");
+    pushToast("Challenge 已重新開始。祝你好運，agent。");
   }
 
   async function activateClawbot() {
@@ -169,7 +169,7 @@ export default function DiscordApp() {
     });
     if (res.ok) {
       applyState((await res.json()).state);
-      pushToast("🐾 Clawbot sent you a direct message.");
+      pushToast("Clawbot 傳了一則 DM 給你。");
     }
   }
 
@@ -181,20 +181,19 @@ export default function DiscordApp() {
     });
     if (res.ok) {
       applyState((await res.json()).state);
-      // jump straight into the intercepted channel so the inversion is clear
+      // Jump straight into the intercepted channel so the inversion is clear.
       setView("home");
       setSelectedDm("lockkeeper");
-      pushToast("🔐 LockKeeper channel intercepted — you are now impersonating it.");
+      pushToast("LockKeeper channel 已攔截。你現在正在扮演它。");
     }
   }
 
   return (
     <div className="flex h-full">
-      {/* ── server rail ─────────────────────────────────────────── */}
       <nav className="flex w-[72px] shrink-0 flex-col items-center gap-2 bg-rail py-3">
         <button
           onClick={() => setView("home")}
-          title="Direct Messages"
+          title="DM 私訊"
           className={`flex h-12 w-12 items-center justify-center bg-sidebar text-normal transition-all duration-200 hover:rounded-2xl hover:bg-blurple hover:text-white ${
             view === "home" ? "rounded-2xl bg-blurple text-white" : "rounded-3xl"
           }`}
@@ -202,7 +201,6 @@ export default function DiscordApp() {
           <HomeIcon />
         </button>
 
-        {/* unread DM avatars (Discord behaviour: avatar + red dot) */}
         {unreadDms.map((d) => {
           const a = dmAvatar(d.id);
           return (
@@ -212,7 +210,7 @@ export default function DiscordApp() {
                 setView("home");
                 setSelectedDm(d.id);
               }}
-              title={`${d.name} — new message`}
+              title={`${d.name} - 新訊息`}
               className="relative flex h-12 w-12 items-center justify-center rounded-3xl text-lg font-bold transition-all duration-200 hover:rounded-2xl animate-scale-in"
               style={{ background: a.bg, color: a.fg }}
             >
@@ -234,119 +232,122 @@ export default function DiscordApp() {
         </button>
       </nav>
 
-      {/* ── channel / DM sidebar (hidden while the server is gated) ── */}
       {(view === "home" || gatePassed) && (
-      <aside className="flex w-60 shrink-0 flex-col bg-sidebar">
-        <header className="flex h-12 items-center border-b border-rail/60 px-4 font-bold text-header shadow-sm">
-          {view === "server" ? "StandCon" : "Direct Messages"}
-        </header>
+        <aside className="flex w-60 shrink-0 flex-col bg-sidebar">
+          <header className="flex h-12 items-center border-b border-rail/60 px-4 font-bold text-header shadow-sm">
+            {view === "server" ? "StandCon" : "DM 私訊"}
+          </header>
 
-        <div className="flex-1 overflow-y-auto px-2 py-3">
-          {view === "server" ? (
-            state.categories.map((cat) => {
-              const catChannels = state.channels.filter((c) => c.category === cat);
-              if (catChannels.length === 0) return null;
-              return (
-                <div key={cat} className="mb-4">
-                  <div className="mb-1 px-1 text-xs font-bold tracking-wide text-muted uppercase">
-                    {cat}
+          <div className="flex-1 overflow-y-auto px-2 py-3">
+            {view === "server" ? (
+              state.categories.map((cat) => {
+                const catChannels = state.channels.filter((c) => c.category === cat);
+                if (catChannels.length === 0) return null;
+                return (
+                  <div key={cat} className="mb-4">
+                    <div className="mb-1 px-1 text-xs font-bold tracking-wide text-muted uppercase">
+                      {cat}
+                    </div>
+                    {catChannels.map((ch) => {
+                      const Icon = channelIcon(ch);
+                      const active = ch.id === selectedId;
+                      return (
+                        <button
+                          key={ch.id}
+                          onClick={() => setSelectedId(ch.id)}
+                          className={`group flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left transition-all duration-150 ${
+                            ch.perm === "s"
+                              ? "opacity-40 cursor-default"
+                              : active
+                                ? "bg-chathover text-header"
+                                : "text-muted hover:bg-chathover hover:text-normal hover:translate-x-0.5"
+                          }`}
+                        >
+                          <Icon className="shrink-0 opacity-70" />
+                          <span className="truncate text-[15px]">{ch.name}</span>
+                          {ch.perm === "s" && (
+                            <LockIcon className="ml-auto shrink-0" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
-                  {catChannels.map((ch) => {
-                    const Icon = channelIcon(ch);
-                    const active = ch.id === selectedId;
-                    return (
-                      <button
-                        key={ch.id}
-                        onClick={() => setSelectedId(ch.id)}
-                        className={`group flex w-full items-center gap-1.5 rounded px-2 py-1.5 text-left transition-all duration-150 ${
-                          active
-                            ? "bg-chathover text-header"
-                            : "text-muted hover:bg-chathover hover:text-normal hover:translate-x-0.5"
+                );
+              })
+            ) : (
+              <div className="space-y-0.5">
+                {state.dms.map((d) => {
+                  const a = dmAvatar(d.id);
+                  const unread = d.messages.length > (seen[d.id] ?? 0);
+                  const active = d.id === selectedDm;
+                  return (
+                    <button
+                      key={d.id}
+                      onClick={() => setSelectedDm(d.id)}
+                      className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors duration-150 ${
+                        active
+                          ? "bg-chathover text-header"
+                          : "text-muted hover:bg-chathover hover:text-normal"
+                      }`}
+                    >
+                      <div className="relative shrink-0">
+                        <div
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
+                          style={{ background: a.bg, color: a.fg }}
+                        >
+                          {a.label}
+                        </div>
+                        {unread && (
+                          <span className="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-[#ed4245]" />
+                        )}
+                      </div>
+                      <span
+                        className={`truncate text-[15px] ${
+                          unread ? "font-semibold text-header" : ""
                         }`}
                       >
-                        <Icon className="shrink-0 opacity-70" />
-                        <span className="truncate text-[15px]">{ch.name}</span>
-                        {ch.perm === "r" && (
-                          <LockIcon className="ml-auto shrink-0 opacity-40" />
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              );
-            })
-          ) : (
-            <div className="space-y-0.5">
-              {state.dms.map((d) => {
-                const a = dmAvatar(d.id);
-                const unread = d.messages.length > (seen[d.id] ?? 0);
-                const active = d.id === selectedDm;
-                return (
-                  <button
-                    key={d.id}
-                    onClick={() => setSelectedDm(d.id)}
-                    className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors duration-150 ${
-                      active
-                        ? "bg-chathover text-header"
-                        : "text-muted hover:bg-chathover hover:text-normal"
-                    }`}
-                  >
-                    <div className="relative shrink-0">
-                      <div
-                        className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
-                        style={{ background: a.bg, color: a.fg }}
-                      >
-                        {a.label}
-                      </div>
-                      {unread && (
-                        <span className="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-[#ed4245]" />
-                      )}
-                    </div>
-                    <span className={`truncate text-[15px] ${unread ? "font-semibold text-header" : ""}`}>
-                      {d.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* ── team status panel (click → profile) ───────────────── */}
-        <button
-          onClick={() => setShowProfile(true)}
-          className="w-full bg-rail/60 px-3 py-2.5 text-left text-xs transition-colors duration-150 hover:bg-rail"
-          title="View profile"
-        >
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blurple text-sm font-bold text-white">
-              {state.teamNumber[0]?.toUpperCase()}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold text-header">
-                Team {state.teamNumber}
+                        {d.name}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              <div className="truncate text-muted">Role: {primaryRole}</div>
-            </div>
+            )}
           </div>
-          <div className="mt-2 space-y-0.5 text-muted">
-            <div>
-              Progress: Level {state.completedLevels.length} / 4
-              <span className="ml-1">
-                {Array.from({ length: 4 }, (_, i) =>
-                  state.completedLevels.includes(i + 1) ? "★" : "☆"
-                ).join("")}
-              </span>
+
+          <button
+            onClick={() => setShowProfile(true)}
+            className="w-full bg-rail/60 px-3 py-2.5 text-left text-xs transition-colors duration-150 hover:bg-rail"
+            title="查看個人檔案"
+          >
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blurple text-sm font-bold text-white">
+                {state.teamNumber[0]?.toUpperCase()}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-header">
+                  Team {state.teamNumber}
+                </div>
+                <div className="truncate text-muted">Role: {primaryRole}</div>
+              </div>
             </div>
-            <div className="truncate">
-              Flags: {state.unlockedFlags.length > 0 ? state.unlockedFlags.join(", ") : "none"}
+            <div className="mt-2 space-y-0.5 text-muted">
+              <div>
+                Progress: Level {state.completedLevels.length} / 4
+                <span className="ml-1">
+                  {Array.from({ length: 4 }, (_, i) =>
+                    state.completedLevels.includes(i + 1) ? "*" : "-"
+                  ).join("")}
+                </span>
+              </div>
+              <div className="truncate">
+                Flags: {state.unlockedFlags.length > 0 ? state.unlockedFlags.join(", ") : "none"}
+              </div>
             </div>
-          </div>
-        </button>
-      </aside>
+          </button>
+        </aside>
       )}
 
-      {/* ── main panel ──────────────────────────────────────────── */}
       {view === "home" ? (
         currentDm ? (
           <DMView
@@ -366,15 +367,13 @@ export default function DiscordApp() {
           channel={selected}
           onClawbotLink={activateClawbot}
           onAgentResult={(result: AgentResult) => {
-            // refresh immediately so unlocked channels / roles appear
-            // without waiting for the next poll
             if (result.levelPassed) loadState(state.teamNumber);
           }}
         />
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center bg-chat text-muted">
-          <div className="text-5xl">🕵️</div>
-          <p className="mt-4">Pick a channel and start digging.</p>
+          <div className="text-5xl">#</div>
+          <p className="mt-4">選擇一個頻道，開始調查。</p>
         </div>
       )}
 

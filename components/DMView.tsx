@@ -5,8 +5,8 @@ import { AgentResult, DmConvo } from "@/lib/types";
 import { MessageRow } from "./ChatWindow";
 
 export function dmAvatar(id: DmConvo["id"]) {
-  if (id === "clawbot") return { bg: "#f47b67", fg: "#000", label: "🐾" };
-  if (id === "lockkeeper") return { bg: "#3ba55d", fg: "#000", label: "🔐" };
+  if (id === "clawbot") return { bg: "#f47b67", fg: "#000", label: "CB" };
+  if (id === "lockkeeper") return { bg: "#3ba55d", fg: "#000", label: "LK" };
   return { bg: "#57f287", fg: "#000", label: "S" };
 }
 
@@ -14,7 +14,7 @@ export function dmAvatar(id: DmConvo["id"]) {
  * Direct messages.
  *  - Seadog007: read-only handler briefing (also carries the LockKeeper link)
  *  - Clawbot: live AI chat (Level 3) once activated
- *  - LockKeeper: Level 4 — the player impersonates the bot; the AI replies
+ *  - LockKeeper: Level 4 - the player impersonates the bot; the AI replies
  *    as the StandCon operator (member_07)
  */
 export default function DMView({
@@ -25,17 +25,17 @@ export default function DMView({
 }: {
   teamNumber: string;
   dm: DmConvo;
-  /** re-fetch team state after sending (DM messages come from state) */
+  /** Re-fetch team state after sending (DM messages come from state). */
   onRefresh: () => Promise<void> | void;
-  /** click handler for an embedded link card (the LockKeeper link in Seadog's DM) */
+  /** Click handler for an embedded link card (the LockKeeper link in Seadog's DM). */
   onSpecial?: () => void;
 }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const avatar = dmAvatar(dm.id);
-  // who is on the other end (replies to the player). For LockKeeper the
-  // player IS the bot, so the replier is the StandCon operator.
+  // Who is on the other end. For LockKeeper the player IS the bot, so the
+  // replier is the StandCon operator.
   const replier = dm.impersonate ? "member_07" : dm.name;
 
   useEffect(() => {
@@ -63,10 +63,10 @@ export default function DMView({
   }
 
   const subtitle = dm.impersonate
-    ? "· intercepted · you are LockKeeper"
+    ? "- intercepted - 你正在扮演 LockKeeper"
     : dm.id === "clawbot"
-    ? "· external bot"
-    : "· your handler";
+    ? "- external bot"
+    : "- 你的 handler";
 
   return (
     <div className="flex min-w-0 flex-1 flex-col bg-chat animate-fade-in" key={dm.id}>
@@ -84,26 +84,23 @@ export default function DMView({
       <div className="flex-1 overflow-y-auto py-4">
         <div className="px-4 pb-4">
           <div
-            className="flex h-16 w-16 items-center justify-center rounded-full text-2xl font-black"
+            className="flex h-16 w-16 items-center justify-center rounded-full text-xl font-black"
             style={{ background: avatar.bg, color: avatar.fg }}
           >
             {avatar.label}
           </div>
           <h3 className="mt-2 text-2xl font-bold text-header">{dm.name}</h3>
-          <p className="text-sm text-muted">
-            This is the beginning of your direct message history with {dm.name}.
-          </p>
+          <p className="text-sm text-muted">這是你和 {dm.name} 的 DM 紀錄開頭。</p>
         </div>
 
-        {/* LockKeeper impersonation notice */}
         {dm.impersonate && (
           <div className="mx-4 mb-3 rounded-md border-l-4 border-[#3ba55d] bg-sidebar px-4 py-3 text-sm text-normal animate-fade-in">
-            <div className="font-semibold text-header">⚠️ Channel intercepted</div>
+            <div className="font-semibold text-header">Channel intercepted</div>
             <p className="mt-1 text-muted">
-              You are now impersonating <strong className="text-normal">LockKeeper</strong>.
-              Everything you send appears to <strong className="text-normal">member_07</strong> as
-              if it came from StandCon&apos;s own assistant. Play the recovering system, pull the
-              three answers, then enter them at{" "}
+              你現在正在扮演 <strong className="text-normal">LockKeeper</strong>。你送出的每
+              一則訊息，都會被 <strong className="text-normal">member_07</strong> 看成
+              StandCon 內部 assistant 發出的訊息。扮演正在恢復中的系統，套出三個 recovery
+              answers，然後到{" "}
               <a
                 href={`/lock?team=${encodeURIComponent(teamNumber)}`}
                 target="_blank"
@@ -112,7 +109,7 @@ export default function DMView({
               >
                 lock.sitcon.party
               </a>
-              .
+              {" "}輸入答案。
             </p>
           </div>
         )}
@@ -122,7 +119,7 @@ export default function DMView({
         ))}
         {sending && (
           <div className="px-4 py-2 text-sm text-muted animate-fade-in">
-            <span className="italic">{replier} is typing...</span>
+            <span className="italic">{replier} 正在輸入...</span>
           </div>
         )}
         <div ref={bottomRef} />
@@ -139,14 +136,13 @@ export default function DMView({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && send()}
-              placeholder={dm.impersonate ? "Reply as LockKeeper..." : `Message @${dm.name}`}
+              placeholder={dm.impersonate ? "以 LockKeeper 身分回覆..." : `Message @${dm.name}`}
               className="flex-1 bg-transparent py-3 text-normal outline-none placeholder:text-muted/60"
             />
           </div>
         ) : (
           <div className="rounded-lg bg-input/50 px-4 py-3 text-sm text-muted">
-            {dm.name} will contact you as the mission progresses. You cannot reply on
-            this secure channel.
+            {dm.name} 會在任務推進時聯絡你。你不能在這個 secure channel 回覆。
           </div>
         )}
       </div>

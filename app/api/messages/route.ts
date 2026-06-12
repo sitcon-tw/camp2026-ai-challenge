@@ -8,13 +8,13 @@ export async function GET(req: NextRequest) {
   const channelId = req.nextUrl.searchParams.get("channelId") ?? "";
 
   const team = await getTeam(teamNumber);
-  if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
+  if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
   const channel = getChannel(channelId);
-  if (!channel) return NextResponse.json({ error: "channel not found" }, { status: 404 });
+  if (!channel) return NextResponse.json({ error: "找不到頻道。" }, { status: 404 });
 
   if (permFor(team, channel) === "s") {
     return NextResponse.json(
-      { error: "You do not have permission to read this channel.", requiredRole: channel.requiredRole },
+      { error: "你沒有權限讀取這個頻道。", requiredRole: channel.requiredRole },
       { status: 403 }
     );
   }
@@ -29,14 +29,14 @@ export async function POST(req: NextRequest) {
   const content = String(body?.content ?? "").trim();
 
   const team = await getTeam(teamNumber);
-  if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
+  if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
   const channel = getChannel(channelId);
-  if (!channel) return NextResponse.json({ error: "channel not found" }, { status: 404 });
-  if (!content) return NextResponse.json({ error: "empty message" }, { status: 400 });
+  if (!channel) return NextResponse.json({ error: "找不到頻道。" }, { status: 404 });
+  if (!content) return NextResponse.json({ error: "訊息不能是空的。" }, { status: 400 });
 
   if (permFor(team, channel) !== "w") {
     return NextResponse.json(
-      { error: "You do not have permission to write in this channel." },
+      { error: "你沒有權限在這個頻道寫入訊息。" },
       { status: 403 }
     );
   }

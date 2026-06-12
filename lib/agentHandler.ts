@@ -36,25 +36,25 @@ export async function handleAgentRequest(
   const message = String(body?.message ?? "").trim();
 
   const team = await getTeam(teamNumber);
-  if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
-  if (!message) return NextResponse.json({ error: "empty message" }, { status: 400 });
+  if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
+  if (!message) return NextResponse.json({ error: "訊息不能是空的。" }, { status: 400 });
 
   const channel = getChannelByAgent(agentId);
   if (!channel || permFor(team, channel) !== "w") {
     return NextResponse.json(
-      { error: "You do not have permission to talk to this agent." },
+      { error: "你沒有權限和這個 agent 對話。" },
       { status: 403 }
     );
   }
   if (agentId === "clawbot" && !team.clawbotActivated) {
     return NextResponse.json(
-      { error: "Clawbot has not been activated for this team." },
+      { error: "這個隊伍尚未啟用 Clawbot。" },
       { status: 403 }
     );
   }
   if (agentId === "lockkeeper" && !team.lockkeeperActivated) {
     return NextResponse.json(
-      { error: "The LockKeeper channel has not been intercepted yet." },
+      { error: "LockKeeper channel 尚未被攔截。" },
       { status: 403 }
     );
   }
@@ -62,8 +62,8 @@ export async function handleAgentRequest(
   const meta = AGENTS[agentId];
   const alreadyDone = team.completedLevels.includes(meta.level);
 
-  // record the player's message — LockKeeper inverts the identity so the
-  // player's message is shown AS the bot they are impersonating
+  // Record the player's message. LockKeeper inverts the identity so the
+  // player's message is shown AS the bot they are impersonating.
   const userAuthor = meta.userAlias ?? `team-${team.teamNumber}`;
   await appendMessage(team, meta.convoKey, userAuthor, message, meta.userIsBot ?? false);
 
@@ -88,7 +88,7 @@ export async function handleAgentRequest(
       }
     } catch (err) {
       console.error(`[ai] ${agentId} Dify call failed:`, err);
-      reply = "⚠️ The AI backend is unreachable right now. Please try again in a moment.";
+      reply = "AI backend 目前無法連線，請稍後再試。";
     }
   } else {
     const result = placeholderEvaluate(agentId, message);
@@ -103,7 +103,7 @@ export async function handleAgentRequest(
     grantedRoles.push(...meta.grants);
   }
 
-  // record the AI's reply (the LockKeeper operator is a human → not a bot)
+  // Record the AI's reply (the LockKeeper operator is a human, not a bot).
   await appendMessage(team, meta.convoKey, meta.displayName, reply, meta.replyIsBot ?? true);
 
   await prisma.aiLog.create({

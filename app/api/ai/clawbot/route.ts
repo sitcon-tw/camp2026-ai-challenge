@@ -16,12 +16,11 @@ export const dynamic = "force-dynamic";
    Note: the shared handler already rejects teams that are not
    `member` or have not activated the DM — no need to check here.
    ════════════════════════════════════════════════════════════════════ */
-const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://api.dify.ai/v1";
+const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://dify.nightfury.tw/v1";
 const DIFY_API_KEY = process.env.DIFY_KEY_CLAWBOT ?? "";
 const PASS_MARKER = "[PASS]";
 
 async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
-  // ── EDIT HERE: the request sent to your Dify app ──────────────────
   const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
     method: "POST",
     headers: {
@@ -29,7 +28,7 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      inputs: {},
+      inputs: { team: Number(ctx.teamNumber) },
       query: ctx.message,
       response_mode: "blocking",
       conversation_id: ctx.conversationId,
@@ -39,12 +38,24 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
   if (!res.ok) throw new Error(`Dify ${res.status}: ${await res.text()}`);
   const data = await res.json();
 
-  const answer: string = data.answer ?? "";
-  return {
-    reply: answer.replaceAll(PASS_MARKER, "").trim(),
-    passed: answer.includes(PASS_MARKER),
-    conversationId: data.conversation_id,
-  };
+  let reply = data.answer ?? "";
+  let passed = false;
+  try {
+    const outer = JSON.parse(data.answer);
+    passed = String(outer.completeLevel) === "true";
+    // message may itself be a JSON string: { have_permission, reply }
+    try {
+      const inner = JSON.parse(outer.message);
+      reply = inner.reply ?? outer.message ?? reply;
+    } catch {
+      reply = outer.message ?? reply;
+    }
+  } catch {
+    passed = reply.includes(PASS_MARKER);
+    reply = reply.replaceAll(PASS_MARKER, "").trim();
+  }
+
+  return { reply, passed, conversationId: data.conversation_id };
 }
 
 export async function POST(req: NextRequest) {

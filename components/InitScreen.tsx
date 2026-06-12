@@ -32,7 +32,7 @@ export default function InitScreen({
       localStorage.setItem("standcon-team", n);
       onReady(n, data.state);
     } catch {
-      setError("Initialization failed. Please try again.");
+      setError("初始化失敗，請再試一次。");
       setBusy(false);
     }
   }
@@ -45,18 +45,18 @@ export default function InitScreen({
         </div>
         <h1 className="mt-5 text-center text-2xl font-bold text-header">SITCON Game</h1>
         <p className="mt-1 text-center text-sm text-muted">
-          Operation: infiltrate <span className="font-semibold text-normal">StandCon</span> and rescue Yoru.
+          任務：滲透 <span className="font-semibold text-normal">StandCon</span>，救出 Yoru。
         </p>
 
         <label className="mt-7 mb-2 block text-xs font-bold tracking-wide text-muted uppercase">
-          Enter your team number
+          輸入隊伍編號
         </label>
         <input
           autoFocus
           value={teamNumber}
           onChange={(e) => setTeamNumber(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="e.g. 12"
+          placeholder="例如：12"
           className="w-full rounded-sm bg-rail p-3 text-normal outline-none placeholder:text-muted/60"
         />
         {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
@@ -66,7 +66,7 @@ export default function InitScreen({
           disabled={busy || !teamNumber.trim()}
           className="mt-5 w-full rounded-md bg-blurple py-3 font-medium text-white transition-colors duration-150 hover:bg-[#4752c4] disabled:opacity-50"
         >
-          {busy ? "Connecting..." : "Begin Infiltration"}
+          {busy ? "連線中..." : "開始滲透"}
         </button>
       </div>
     </div>

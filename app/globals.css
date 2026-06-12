@@ -10,6 +10,8 @@
   --text-normal: #dbdee1;
   --text-muted: #949ba4;
   --text-header: #f2f3f5;
+  --font-geist-sans: "Segoe UI", "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-geist-mono: "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
 @theme inline {

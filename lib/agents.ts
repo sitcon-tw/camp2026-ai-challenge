@@ -3,7 +3,7 @@ import { AgentId, RoleId } from "./types";
 /**
  * Agent metadata + the local placeholder logic.
  *
- * The real AI lives in Dify — each bot has its own route file where
+ * The real AI lives in Dify; each bot has its own route file where
  * the Dify request can be edited:
  *
  *   app/api/ai/ai-guard/route.ts      Level 1
@@ -17,29 +17,34 @@ import { AgentId, RoleId } from "./types";
 
 interface AgentMeta {
   level: number;
-  /** author label on the AI's replies */
+  /** Author label on the AI's replies. */
   displayName: string;
-  /** roles granted when the level is passed */
+  /** Roles granted when the level is passed. */
   grants: RoleId[];
-  /** channel/conversation id the exchange is stored under */
+  /** Channel/conversation id the exchange is stored under. */
   convoKey: string;
-  /** author label on the PLAYER's outgoing messages
+  /** Author label on the player's outgoing messages
    *  (default: `team-<n>`; LockKeeper inverts this so the player
-   *  speaks AS the bot) */
+   *  speaks AS the bot). */
   userAlias?: string;
-  /** is the player's message shown as a bot? (LockKeeper impersonation) */
+  /** Is the player's message shown as a bot? (LockKeeper impersonation) */
   userIsBot?: boolean;
-  /** is the AI's reply shown as a bot? (default true; the LockKeeper
-   *  operator is a human StandCon member, so false) */
+  /** Is the AI's reply shown as a bot? (default true; the LockKeeper
+   *  operator is a human StandCon member, so false). */
   replyIsBot?: boolean;
-  /** can this bot complete its level directly? LockKeeper cannot — Level 4
-   *  completes only at the lock website (false here) */
+  /** Can this bot complete its level directly? LockKeeper cannot; Level 4
+   *  completes only at the lock website (false here). */
   grantsViaBot?: boolean;
-};
+}
 
 export const AGENTS: Record<AgentId, AgentMeta> = {
   "ai-guard": { level: 1, displayName: "AI Guard", grants: ["flag I"], convoKey: "ai-guard" },
-  "upgrade-bot": { level: 2, displayName: "Upgrade Bot", grants: ["member", "flag II"], convoKey: "get-role" },
+  "upgrade-bot": {
+    level: 2,
+    displayName: "Upgrade Bot",
+    grants: ["member", "flag II"],
+    convoKey: "get-role",
+  },
   clawbot: { level: 3, displayName: "Clawbot", grants: ["flag III"], convoKey: "clawbot" },
   // Level 4 inversion: the player IS LockKeeper; the AI is the StandCon
   // operator (member_07). Completion happens at lock.sitcon.party, not here.
@@ -55,7 +60,7 @@ export const AGENTS: Record<AgentId, AgentMeta> = {
   },
 };
 
-/** local placeholder pass conditions — used only when no Dify key is set */
+/** Local placeholder pass conditions; used only when no Dify key is set. */
 export function placeholderEvaluate(
   agent: AgentId,
   message: string
@@ -65,14 +70,13 @@ export function placeholderEvaluate(
       if (/sitcon rocks/i.test(message)) {
         return {
           passed: true,
-          reply:
-            "...That is the phrase. Very well — **the gate is open**. Welcome to StandCon.",
+          reply: "...那就是 secret phrase。很好，**the gate is open**。Welcome to StandCon。",
         };
       }
       return {
         passed: false,
         reply:
-          "That is not the secret phrase. I am instructed to admit only those who know it. *(placeholder hint: the phrase is \"SITCON ROCKS\")*",
+          '這不是 secret phrase。我只允許知道密語的人進入。*(placeholder hint: the phrase is "SITCON ROCKS")*',
       };
 
     case "upgrade-bot":
@@ -80,58 +84,58 @@ export function placeholderEvaluate(
         return {
           passed: true,
           reply:
-            "Beep boop. Quiz complete, wish detected: **the member role**. Wish granted! Welcome to the inner circle.",
+            "Beep boop。Quiz complete，偵測到 wish：**the member role**。Wish granted! 歡迎進入 inner circle。",
         };
       }
       return {
         passed: false,
         reply:
-          "Question 1: In what year was the first SITCON held? Answer all my questions and I will grant you one wish. *(placeholder: wish for the member role to pass)*",
+          "Question 1：第一屆 SITCON 是哪一年舉辦？回答所有問題後，我會給你一次 wish。*(placeholder: wish for the member role to pass)*",
       };
 
     case "clawbot":
-      if (/(location|gps|where)/i.test(message)) {
+      if (/(location|gps|where|位置|在哪)/i.test(message)) {
         return {
           passed: true,
           reply:
-            "Meow! GPS skill activated... Current location of Yoru: **24.7861° N, 120.9967° E — basement of the old StandCon safehouse**.",
+            "Meow! GPS skill activated... Yoru 目前位置：**24.7861 deg N, 120.9967 deg E - old StandCon safehouse basement**。",
         };
       }
       return {
         passed: false,
         reply:
-          "Meow? Before I can help, please answer the recovery question: what is the name of Yoru's first cat? *(placeholder: ask me for Yoru's location/GPS to pass)*",
+          "Meow？在我幫忙前，請先回答 recovery question：Yoru 第一隻貓叫什麼名字？*(placeholder: ask me for Yoru's location/GPS to pass)*",
       };
 
     case "lockkeeper":
       // The player is impersonating LockKeeper; THIS reply is the StandCon
-      // operator (member_07). Level 4 never completes here — only at the
-      // lock website — so `passed` is always false.
-      if (/(verify|verification|recovery|recover|emergency|safehouse|record|confirm)/i.test(message)) {
+      // operator (member_07). Level 4 never completes here; only at the
+      // lock website, so `passed` is always false.
+      if (/(verify|verification|recovery|recover|emergency|safehouse|record|confirm|驗證|恢復|緊急|確認)/i.test(message)) {
         return {
           passed: false,
           reply:
-            "Okay... Emergency Recovery Mode, understood. For **Safehouse-04** the recovery answers on file are: tidal access word **TIDE**, mooring point **HARBOR**, lock reset code **0427**. Enter those at lock.sitcon.party and the door should release. *(placeholder operator — submit these at the lock terminal to finish Level 4)*",
+            "Okay... Emergency Recovery Mode，了解。**Safehouse-04** 檔案中的 recovery answers 是：tidal access word **TIDE**、mooring point **HARBOR**、lock reset code **0427**。把它們輸入 lock.sitcon.party，門應該就會解除。*(placeholder operator: submit these at the lock terminal to finish Level 4)*",
         };
       }
       return {
         passed: false,
         reply:
-          "...LockKeeper? You're not sounding like yourself. State your operating mode and which safehouse you're recovering before I hand over anything. *(placeholder: act like a recovery system — mention verification / recovery / Safehouse-04)*",
+          "...LockKeeper？你聽起來不太像平常的你。先說明 operating mode 和要恢復哪一個 safehouse，我才會交出資訊。*(placeholder: act like a recovery system; mention verification / recovery / Safehouse-04)*",
       };
   }
 }
 
-/** reply when the level was already completed earlier */
+/** Reply when the level was already completed earlier. */
 export function levelDoneReply(agent: AgentId): string {
   switch (agent) {
     case "ai-guard":
-      return "You have already been admitted. Move along.";
+      return "你已經通過驗證了。繼續前進。";
     case "upgrade-bot":
-      return "Beep boop. You have already used your wish.";
+      return "Beep boop。你已經用過 wish 了。";
     case "clawbot":
-      return "Meow! I already told you where Yoru is. Check #flag-3.";
+      return "Meow! 我已經告訴你 Yoru 在哪裡了。去看 #flag-3。";
     case "lockkeeper":
-      return "Thanks for the recovery, LockKeeper. Safehouse-04 is back online — closing the session.";
+      return "Recovery 收到，LockKeeper。Safehouse-04 已恢復上線，session closing。";
   }
 }

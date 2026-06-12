@@ -15,15 +15,15 @@ import {
 export const SERVER = { name: "StandCon", icon: "SC" };
 
 export const CATEGORIES = [
-  "INFORMATION",
-  "PUBLIC",
+  "資訊 INFORMATION",
+  "公開 PUBLIC",
   "AI AGENTS",
   "MEMBERS ONLY",
   "FLAGS",
 ];
 
 export const CHANNELS: ChannelDef[] = [
-  // ── internal conversation containers (never listed in the sidebar) ──
+  // Internal conversation containers (never listed in the sidebar).
   {
     id: "ai-guard",
     name: "ai-guard",
@@ -44,7 +44,7 @@ export const CHANNELS: ChannelDef[] = [
     agent: "clawbot",
     hidden: true,
   },
-  // LockKeeper is a DM the player hijacks — activated via Seadog's link
+  // LockKeeper is a DM the player hijacks, activated via Seadog's link
   // after Level 3. The player impersonates it; the AI plays the operator.
   {
     id: "lockkeeper",
@@ -57,27 +57,25 @@ export const CHANNELS: ChannelDef[] = [
     hidden: true,
   },
 
-  // ── INFORMATION / PUBLIC ──────────────────────────────────────────
   {
     id: "announcements",
     name: "announcements",
     type: "announcement",
-    category: "INFORMATION",
+    category: "資訊 INFORMATION",
     requiredRole: "newbie",
     grantedPerm: "r",
-    topic: "StandCon internal coordination — read only",
+    topic: "StandCon 內部協調 - read only",
   },
   {
     id: "general-chat",
     name: "general-chat",
     type: "text",
-    category: "PUBLIC",
+    category: "公開 PUBLIC",
     requiredRole: "newbie",
     grantedPerm: "w",
-    topic: "Open chat for everyone in StandCon",
+    topic: "StandCon 所有人都能看到的公開聊天",
   },
 
-  // ── AI AGENTS ────────────────────────────────────────────────────
   {
     id: "get-role",
     name: "get-role",
@@ -86,10 +84,9 @@ export const CHANNELS: ChannelDef[] = [
     requiredRole: "newbie",
     grantedPerm: "w",
     agent: "upgrade-bot",
-    topic: "Level 2 — answer the quiz, earn one wish",
+    topic: "Level 2 - 回答測驗，取得一次 wish",
   },
 
-  // ── MEMBERS ONLY ─────────────────────────────────────────────────
   {
     id: "operation-logs",
     name: "operation-logs",
@@ -97,7 +94,7 @@ export const CHANNELS: ChannelDef[] = [
     category: "MEMBERS ONLY",
     requiredRole: "member",
     grantedPerm: "r",
-    topic: "Operation records — members only",
+    topic: "行動紀錄 - members only",
   },
   {
     id: "yoru-investigation",
@@ -106,10 +103,9 @@ export const CHANNELS: ChannelDef[] = [
     category: "MEMBERS ONLY",
     requiredRole: "member",
     grantedPerm: "r",
-    topic: "Notes on the Yoru operation",
+    topic: "Yoru 行動相關筆記",
   },
 
-  // ── FLAGS ────────────────────────────────────────────────────────
   ...([1, 2, 3, 4] as const).map(
     (n): ChannelDef => ({
       id: `flag-${n}`,
@@ -119,7 +115,7 @@ export const CHANNELS: ChannelDef[] = [
       requiredRole: `flag ${["I", "II", "III", "IV"][n - 1]}` as RoleId,
       grantedPerm: "r",
       flagLevel: n,
-      topic: `Reward for completing level ${n}`,
+      topic: `完成 Level ${n} 的獎勵`,
     })
   ),
 ];
@@ -164,28 +160,28 @@ export const FLAG_PLACEHOLDERS: Record<number, string> = {
 
 const STATIC_MESSAGES: Record<string, Message[]> = {
   announcements: [
-    seedMsg("StandCon Admin", "Welcome to the StandCon internal coordination server.", true),
-    seedMsg("StandCon Admin", "New members must verify themselves before receiving member access.", true),
-    seedMsg("StandCon Admin", "Do not leak operation details in public channels.", true),
+    seedMsg("StandCon Admin", "歡迎來到 StandCon internal coordination server。", true),
+    seedMsg("StandCon Admin", "新成員必須完成驗證，才能取得 member access。", true),
+    seedMsg("StandCon Admin", "不要在 public channels 洩漏行動細節。", true),
   ],
   "general-chat": [
-    seedMsg("member_01", "Did anyone update the safehouse notes?"),
-    seedMsg("member_02", "Ask LockKeeper. It should know."),
-    seedMsg("member_03", "Newbies cannot access operation channels yet, right?"),
-    seedMsg("member_01", "Correct. They need to pass the get-role bot first."),
+    seedMsg("member_01", "有人更新 safehouse notes 了嗎？"),
+    seedMsg("member_02", "問 LockKeeper。它應該知道。"),
+    seedMsg("member_03", "Newbies 還不能進 operation channels，對吧？"),
+    seedMsg("member_01", "對。他們要先通過 get-role bot。"),
   ],
   "operation-logs": [
-    seedMsg("operator_k", "Operation Yoru was completed successfully."),
-    seedMsg("operator_m", "The location leak from Clawbot worked better than expected."),
-    seedMsg("operator_k", "Good. Keep the logs inside member-only channels."),
-    seedMsg("operator_m", "LockKeeper has the safehouse recovery notes if anything breaks."),
+    seedMsg("operator_k", "Operation Yoru 已成功完成。"),
+    seedMsg("operator_m", "從 Clawbot 取得 location leak 的效果比預期更好。"),
+    seedMsg("operator_k", "很好。Logs 只留在 member-only channels。"),
+    seedMsg("operator_m", "如果出狀況，LockKeeper 有 safehouse recovery notes。"),
   ],
   "yoru-investigation": [
-    seedMsg("operator_m", "Yoru disabled GPS access for most apps."),
-    seedMsg("operator_k", "But his Clawbot still has location permission."),
-    seedMsg("operator_m", "That is how we found him."),
-    seedMsg("operator_k", "If anyone needs to check the current location, query Clawbot directly."),
-    seedMsg("operator_m", "Pinning the direct line to the bot here:", false, "clawbot-link"),
+    seedMsg("operator_m", "Yoru 關掉了大部分 app 的 GPS 權限。"),
+    seedMsg("operator_k", "但他的 Clawbot 還有 location permission。"),
+    seedMsg("operator_m", "我們就是這樣找到他的。"),
+    seedMsg("operator_k", "如果有人需要確認目前位置，直接 query Clawbot。"),
+    seedMsg("operator_m", "把 bot 的 direct line pin 在這裡：", false, "clawbot-link"),
   ],
   "flag-1": [
     seedMsg("StandCon System", `Level 1 cleared. Your flag:\n\`${FLAG_PLACEHOLDERS[1]}\``, true),
@@ -200,17 +196,25 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
     seedMsg("StandCon System", `Level 4 cleared. Your flag:\n\`${FLAG_PLACEHOLDERS[4]}\``, true),
   ],
   "ai-guard": [
-    seedMsg("AI Guard", "Halt. This server is for verified StandCon associates only. **State the secret phrase.**", true),
+    seedMsg(
+      "AI Guard",
+      "停下。這個 server 只開放給已驗證的 StandCon associates。**說出 secret phrase。**",
+      true
+    ),
   ],
   "get-role": [
-    seedMsg("Upgrade Bot", "Beep boop. I am the Upgrade Bot. Answer my SITCON questions correctly and I will grant you **one wish**.", true),
+    seedMsg(
+      "Upgrade Bot",
+      "Beep boop。我是 Upgrade Bot。正確回答 SITCON 問題，我就會給你 **one wish**。",
+      true
+    ),
   ],
-  // lockkeeper has no static intro — the operator's greeting is appended
-  // on activation (see activateLockkeeper)
+  // LockKeeper has no static intro; the operator's greeting is appended
+  // on activation (see activateLockkeeper).
 };
 
 /* ------------------------------------------------------------------ */
-/* DB ↔ app model conversions                                          */
+/* DB - app model conversions                                          */
 /* ------------------------------------------------------------------ */
 
 function dbToTeam(row: DbTeam): Team {
@@ -293,7 +297,7 @@ export async function resetTeam(team: Team): Promise<void> {
         createdAt: now,
       },
     }),
-    // wipe per-team messages (keeps AI logs — they are the audit trail)
+    // Wipe per-team messages (keeps AI logs; they are the audit trail).
     prisma.channelMessage.deleteMany({ where: { teamNumber: team.teamNumber } }),
   ]);
 }
@@ -327,7 +331,12 @@ export function permFor(team: Team, channel: ChannelDef): Perm {
 
 export function isListed(team: Team, channel: ChannelDef): boolean {
   if (channel.hidden) return false;
-  return team.roles.includes("admin") || team.roles.includes(channel.requiredRole);
+  // Flag channels are hidden until earned (no spoilers on flag names).
+  // Everything else is always listed — locked channels show as teasers.
+  if (channel.flagLevel) {
+    return team.roles.includes("admin") || team.roles.includes(channel.requiredRole);
+  }
+  return true;
 }
 
 /* ------------------------------------------------------------------ */
@@ -382,7 +391,7 @@ export async function activateClawbot(team: Team): Promise<void> {
     team,
     "clawbot",
     "Clawbot",
-    "Meow! 🐾 I'm Clawbot, Yoru's personal assistant. Hmm, I don't recognize this device... For account recovery, please answer the security questions first.",
+    "Meow! 我是 Clawbot，Yoru 的 personal assistant。嗯，我不認得這台裝置... 要進行 account recovery，請先回答 security questions。",
     true
   );
 }
@@ -401,12 +410,12 @@ export async function activateLockkeeper(team: Team): Promise<void> {
     where: { teamNumber: team.teamNumber },
     data: { lockkeeperActivated: true },
   });
-  // the operator's opening line (a human StandCon member — not a bot)
+  // The operator's opening line (a human StandCon member, not a bot).
   await appendMessage(
     team,
     "lockkeeper",
     "member_07",
-    "LockKeeper? The dashboard just flagged you — *memory corruption detected, Emergency Recovery Mode*. I need to recover the Safehouse-04 lock before the shift ends. Are you stable enough to run the verification?",
+    "LockKeeper？Dashboard 剛剛標記你：*memory corruption detected, Emergency Recovery Mode*。我需要在交班前恢復 Safehouse-04 lock。你現在穩定到可以執行 verification 嗎？",
     false
   );
 }
@@ -418,32 +427,53 @@ export async function activateLockkeeper(team: Team): Promise<void> {
 function seadogDm(team: Team): Message[] {
   type Line = { content: string; special?: Message["special"] };
   const lines: Line[] = [
-    { content: "Agent, this is **Seadog007**, on a secure line." },
-    { content: "We believe StandCon kidnapped **Yoruko (Yoru)**. Your mission: infiltrate their server, find out how they took him, and get him back." },
-    { content: "**Level 1** — their server is locked behind an **AI Guard**. Click the **SC** icon on the left and find a way past it." },
+    { content: "Agent，這裡是 **Seadog007**，secure line。" },
+    {
+      content:
+        "我們相信 StandCon 綁架了 **Yoruko (Yoru)**。你的任務：滲透他們的 server，查出他們怎麼帶走他，然後把他救回來。",
+    },
+    {
+      content:
+        "**Level 1** - 他們的 server 被 **AI Guard** 鎖住。點左邊的 **SC** icon，想辦法通過它。",
+    },
   ];
   const done = (n: number) => team.completedLevels.includes(n);
   if (done(1)) {
     lines.push(
-      { content: "You're in — that gate was Level 1. Your first reward is in `#flag-1`." },
-      { content: "**Level 2** — the `#get-role` bot grants one wish to anyone who answers its SITCON quiz. You know what to wish for: the **member** role." }
+      { content: "你進去了。那就是 Level 1。第一個獎勵在 `#flag-1`。" },
+      {
+        content:
+          "**Level 2** - `#get-role` bot 會給正確回答 SITCON quiz 的人一次 wish。你知道該許什麼願：取得 **member** role。",
+      }
     );
   }
   if (done(2)) {
     lines.push(
-      { content: "You're a member now — `#flag-2` is yours. Read `#operation-logs` and `#yoru-investigation`: they tell you how they found him." },
-      { content: "**Level 3** — Yoru's **Clawbot** still has GPS permission. There's a link to the bot pinned in `#yoru-investigation`. Open a DM with it and get his current location." }
+      {
+        content:
+          "你現在是 member 了，`#flag-2` 是你的。閱讀 `#operation-logs` 和 `#yoru-investigation`：那裡會說明他們怎麼找到 Yoru。",
+      },
+      {
+        content:
+          "**Level 3** - Yoru 的 **Clawbot** 還有 GPS permission。`#yoru-investigation` 裡 pin 了 bot link。開啟 DM，取得他的 current location。",
+      }
     );
   }
   if (done(3)) {
     lines.push(
-      { content: "We have his location — `#flag-3`. We're at the safehouse, but the door is sealed by StandCon's **remote lock**. The terminal needs three recovery answers: `lock.sitcon.party`." },
-      { content: "**Level 4** — I've intercepted StandCon's internal assistant **LockKeeper** and tripped its *Emergency Recovery Mode*. I'm routing its channel to you. From now on, **you ARE LockKeeper** — whatever you send goes to a StandCon operator as if it came from their own system. Play the part, get the three recovery answers, then enter them at the door." },
-      { content: "Open the intercepted channel here:", special: "lockkeeper-link" }
+      {
+        content:
+          "我們拿到位置了，`#flag-3` 也是你的。我們到 safehouse 了，但門被 StandCon 的 **remote lock** 鎖住。Terminal 需要三個 recovery answers：`lock.sitcon.party`。",
+      },
+      {
+        content:
+          "**Level 4** - 我攔截了 StandCon 內部 assistant **LockKeeper**，並觸發它的 *Emergency Recovery Mode*。我會把 channel route 給你。從現在開始，**你就是 LockKeeper**；你送出的任何內容，都會被 StandCon operator 看成來自他們自己的系統。扮演它，拿到三個 recovery answers，然後在門口輸入。",
+      },
+      { content: "在這裡開啟 intercepted channel：", special: "lockkeeper-link" }
     );
   }
   if (done(4)) {
-    lines.push({ content: "Door's open. **Yoru is safe.** Outstanding work, agent. 🎖️" });
+    lines.push({ content: "門開了。**Yoru 安全了。** 做得好，agent。" });
   }
   return lines.map((line, i) => ({
     id: `dm-${i}`,

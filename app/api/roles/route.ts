@@ -26,9 +26,9 @@ export async function POST(req: NextRequest) {
   const role = body?.role as RoleId;
 
   const team = await getTeam(teamNumber);
-  if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
+  if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
   if (!ALL_ROLES.includes(role)) {
-    return NextResponse.json({ error: "unknown role", available: ALL_ROLES }, { status: 400 });
+    return NextResponse.json({ error: "未知 role", available: ALL_ROLES }, { status: 400 });
   }
   await grantRoles(team, [role]);
   return NextResponse.json({ teamNumber, roles: team.roles });
@@ -40,7 +40,7 @@ export async function DELETE(req: NextRequest) {
   const role = body?.role as RoleId;
 
   const team = await getTeam(teamNumber);
-  if (!team) return NextResponse.json({ error: "team not found" }, { status: 404 });
+  if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
   await removeRole(team, role);
   return NextResponse.json({ teamNumber, roles: team.roles });
 }
