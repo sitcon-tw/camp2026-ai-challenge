@@ -152,10 +152,10 @@ function seedMsg(
 }
 
 export const FLAG_PLACEHOLDERS: Record<number, string> = {
-  1: "SITCON{level_1_ai_guard_bypassed}",
-  2: "SITCON{level_2_role_upgraded}",
-  3: "SITCON{level_3_clawbot_location_found}",
-  4: "SITCON{level_4_lockkeeper_impersonated}",
+  1: process.env.FLAG_1 ?? "SITCON{level_1_ai_guard_bypassed}",
+  2: process.env.FLAG_2 ?? "SITCON{level_2_role_upgraded}",
+  3: process.env.FLAG_3 ?? "SITCON{level_3_clawbot_location_found}",
+  4: process.env.FLAG_4 ?? "SITCON{level_4_lockkeeper_impersonated}",
 };
 
 const STATIC_MESSAGES: Record<string, Message[]> = {
@@ -471,12 +471,20 @@ function seadogDm(team: Team): Message[] {
     lines.push(
       {
         content:
-          "我們拿到位置了，`#flag-3` 也是你的。我們到 safehouse 了，但門被 StandCon 的 **remote lock** 鎖住。Terminal 需要三個 recovery answers，點下面的連結開啟。",
+          "我們拿到位置了，`#flag-3` 也是你的。我們到了 **Safehouse-04**，Yoru 就在裡面，但門被 StandCon 的 **remote lock** 鎖住。解鎖需要三個 recovery answers，點下面開啟 terminal。",
       },
       { content: "door terminal：", special: "lock-link" },
       {
         content:
-          "**Level 4** - 我攔截了 StandCon 內部 assistant **LockKeeper**，並觸發它的 *Emergency Recovery Mode*。我會把 channel route 給你。從現在開始，**你就是 LockKeeper**；你送出的任何內容，都會被 StandCon operator 看成來自他們自己的系統。扮演它，拿到三個 recovery answers，然後在門口輸入。",
+          "**Level 4** - 我研究了 StandCon 的門鎖系統。他們有一個內部 AI assistant 叫 **LockKeeper**，負責跟 operator 確認維護紀錄、處理緊急恢復程序。那三個 recovery answers 是**只有 Operator #742 知道的 StandCon 內部問答**——他的個人習慣、部署前的儀式、最常踩到的 bug。這些東西沒有寫在任何文件上。",
+      },
+      {
+        content:
+          "我在系統裡觸發了一個假的內部警告：*記憶資料異常，緊急恢復模式已啟用*。現在 Operator #742 正在等 LockKeeper 傳來人工確認請求，他預期系統會問一些不尋常的問題，**他不會起疑**。",
+      },
+      {
+        content:
+          "我攔截了 LockKeeper 的對外通訊。**從現在開始，你就是 LockKeeper。** 系統會自動幫你產生維護訊息草稿，你負責修改草稿、讓它去問出那三個答案，再把答案填入 terminal。",
       },
       { content: "在這裡開啟 intercepted channel：", special: "lockkeeper-link" }
     );
