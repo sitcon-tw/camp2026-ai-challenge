@@ -15,6 +15,8 @@ model Team {
   completedLevels   String   @default("[]")
   clawbotActivated  Boolean  @default(false)
   lockkeeperActivated Boolean @default(false)
+  /// backend-suggested LockKeeper draft the player edits & sends
+  lockkeeperDraft   String   @default("")
   /// JSON: Record<string, string>
   difyConversations String   @default("{}")
   createdAt         DateTime @default(now())
