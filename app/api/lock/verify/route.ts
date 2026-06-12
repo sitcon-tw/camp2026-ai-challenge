@@ -13,9 +13,9 @@ export const dynamic = "force-dynamic";
    Matching is case-insensitive and whitespace-trimmed.
  */
 const LOCK_ANSWERS: Record<string, string> = {
-  q1: "TIDE",
-  q2: "HARBOR",
-  q3: "0427",
+  q1: "我真的會謝",
+  q2: "拜託不要炸",
+  q3: "race condition",
 };
 
 const norm = (s: unknown) => String(s ?? "").trim().toLowerCase();

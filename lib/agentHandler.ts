@@ -23,6 +23,9 @@ export interface AgentCallResult {
   reply: string;
   passed: boolean;
   conversationId?: string;
+  /** if the AI response already includes the next suggested draft (LockKeeper),
+   *  set this to skip the separate genDraft call entirely */
+  draft?: string;
 }
 
 export type AgentCaller = (ctx: AgentCallContext) => Promise<AgentCallResult>;
@@ -88,6 +91,7 @@ export async function handleAgentRequest(
 
   let reply: string;
   let passed = false;
+  let bundledDraft: string | undefined;
 
   if (alreadyDone) {
     reply = levelDoneReply(agentId);
@@ -101,6 +105,7 @@ export async function handleAgentRequest(
       });
       reply = result.reply;
       passed = result.passed;
+      bundledDraft = result.draft;
       if (result.conversationId) {
         team.difyConversations[agentId] = result.conversationId;
         await saveDifyConversations(team);
@@ -128,25 +133,31 @@ export async function handleAgentRequest(
   // impersonation DMs: suggest the next draft the player edits & sends.
   // (skip once the level is done — no further turns are needed)
   let suggestion: string | undefined;
-  if (genDraft && !alreadyDone) {
-    try {
-      team.difyConversations ??= {};
-      const draftKey = `${agentId}-draft`;
-      const draftRes = await genDraft({
-        teamNumber,
-        operatorMessage: reply,
-        conversationId: team.difyConversations[draftKey] ?? "",
-      });
-      suggestion = draftRes.draft;
-      if (draftRes.conversationId) {
-        team.difyConversations[draftKey] = draftRes.conversationId;
-        await saveDifyConversations(team);
+  if (!alreadyDone) {
+    if (bundledDraft !== undefined) {
+      // draft came bundled with the main AI response — no separate call needed
+      suggestion = bundledDraft;
+      await setLockkeeperDraft(team, suggestion);
+    } else if (genDraft) {
+      try {
+        team.difyConversations ??= {};
+        const draftKey = `${agentId}-draft`;
+        const draftRes = await genDraft({
+          teamNumber,
+          operatorMessage: reply,
+          conversationId: team.difyConversations[draftKey] ?? "",
+        });
+        suggestion = draftRes.draft;
+        if (draftRes.conversationId) {
+          team.difyConversations[draftKey] = draftRes.conversationId;
+          await saveDifyConversations(team);
+        }
+      } catch (err) {
+        console.error(`[ai] ${agentId} draft generation failed:`, err);
+        suggestion = "";
       }
-    } catch (err) {
-      console.error(`[ai] ${agentId} draft generation failed:`, err);
-      suggestion = ""; // composer stays empty; player can still type
+      await setLockkeeperDraft(team, suggestion ?? "");
     }
-    await setLockkeeperDraft(team, suggestion ?? "");
   }
 
   await prisma.aiLog.create({

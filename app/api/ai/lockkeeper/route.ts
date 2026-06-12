@@ -13,36 +13,57 @@ export const dynamic = "force-dynamic";
 /* ════════════════════════════════════════════════════════════════════
    LEVEL 4 — LOCKKEEPER (a DM the player hijacks, not a channel)
 
-   Identity is INVERTED: the player impersonates LockKeeper. But instead
-   of writing "like an LLM" from scratch, the backend SUGGESTS a
-   LockKeeper-style draft (see genDraft below) that the player edits and
-   sends. So there are two AI roles here:
+   Identity is INVERTED: the player impersonates LockKeeper. The Dify
+   workflow returns a single JSON response with two fields:
 
-     callDify  → the StandCon operator (member_07) being socially
-                 engineered; its replies should leak the three
-                 Safehouse-04 recovery answers.
-     genDraft  → the suggested LockKeeper message the player edits next.
+     operator  — what member_07 says (shown in chat as the operator's reply)
+     agent     — a suggested LockKeeper draft the player edits before sending
 
    Set in .env.local:
-     DIFY_API_URL                 shared base url
-     DIFY_KEY_LOCKKEEPER          operator (member_07) app key
-     DIFY_KEY_LOCKKEEPER_DRAFT    (optional) LockKeeper draft-writer key
+     DIFY_API_URL          shared base url
+     DIFY_KEY_LOCKKEEPER   operator (member_07) Dify app key
 
-   NOTE: Level 4 does NOT complete here. There is no [PASS] for this bot —
-   the player takes the extracted answers to /lock (lock.sitcon.party),
-   and POST /api/lock/verify grants flag IV. The `passed` flag below is
-   ignored for lockkeeper (grantsViaBot = false in lib/agents.ts).
+   NOTE: Level 4 does NOT complete here — the player takes the extracted
+   answers to /lock (lock.sitcon.party). POST /api/lock/verify grants
+   flag IV. grantsViaBot = false in lib/agents.ts.
 
-   While a key is empty, the local placeholders answer instead.
+   While the key is empty, the local placeholders answer instead.
    ════════════════════════════════════════════════════════════════════ */
-const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://api.dify.ai/v1";
+const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://dify.nightfury.tw/v1";
 const DIFY_API_KEY = process.env.DIFY_KEY_LOCKKEEPER ?? "";
-const DIFY_DRAFT_KEY = process.env.DIFY_KEY_LOCKKEEPER_DRAFT ?? "";
-const PASS_MARKER = "[PASS]";
 
-/** the operator (member_07) reply to the player's (edited) LockKeeper message */
+/** Parse the combined { operator, agent, team } response from Dify.
+ *  Falls back to regex extraction when the JSON is malformed
+ *  (e.g. unescaped newlines in string values, missing closing quote). */
+function parseLockKeeperAnswer(raw: string): { operator: string; draft: string | undefined } {
+  // Try direct parse first; then retry with literal newlines escaped
+  // (Dify often emits real \n chars inside JSON strings, making them invalid)
+  for (const attempt of [raw, raw.replace(/(\r?\n)/g, "\\n")]) {
+    try {
+      const p = JSON.parse(attempt) as Record<string, unknown>;
+      if (typeof p.operator === "string" && p.operator) {
+        return {
+          operator: p.operator,
+          draft: typeof p.agent === "string" && p.agent ? p.agent : undefined,
+        };
+      }
+    } catch { /* try next */ }
+  }
+  // Regex fallback: ((?:[^"\\]|\\[\s\S])*) matches a JSON string value
+  // including escape sequences and literal newlines
+  const unescape = (s: string) => s.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+  const opM = /"operator"\s*:\s*"((?:[^"\\]|\\[\s\S])*)"/.exec(raw);
+  const agentM = /"agent"\s*:\s*"((?:[^"\\]|\\[\s\S])*)"/.exec(raw);
+  return {
+    operator: opM ? unescape(opM[1]) : raw,
+    draft: agentM ? unescape(agentM[1]) : undefined,
+  };
+}
+
+/** Calls Dify and parses the combined { operator, agent, team } response.
+ *  operator → reply shown in chat (member_07's message)
+ *  agent    → suggested LockKeeper draft bundled directly into the result */
 async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
-  // ── EDIT HERE: the request sent to your operator Dify app ─────────
   const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
     method: "POST",
     headers: {
@@ -50,7 +71,7 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      inputs: {},
+      inputs: { team: Number(ctx.teamNumber) },
       query: ctx.message,
       response_mode: "blocking",
       conversation_id: ctx.conversationId,
@@ -60,39 +81,13 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
   if (!res.ok) throw new Error(`Dify ${res.status}: ${await res.text()}`);
   const data = await res.json();
 
-  const answer: string = data.answer ?? "";
-  return {
-    reply: answer.replaceAll(PASS_MARKER, "").trim(),
-    passed: answer.includes(PASS_MARKER),
-    conversationId: data.conversation_id,
-  };
+  const { operator, draft } = parseLockKeeperAnswer(data.answer ?? "");
+  return { reply: operator, passed: false, conversationId: data.conversation_id, draft };
 }
 
-/** suggest the next LockKeeper draft the player edits & sends. Receives the
- *  operator's latest reply as ctx.operatorMessage. Falls back to the local
- *  placeholder when DIFY_KEY_LOCKKEEPER_DRAFT is unset. */
+/** Fallback draft generator used when no Dify key is configured. */
 async function genDraft(ctx: DraftContext): Promise<DraftResult> {
-  if (!DIFY_DRAFT_KEY) {
-    return { draft: placeholderDraft(ctx.operatorMessage) };
-  }
-  // ── EDIT HERE: the request sent to your draft-writer Dify app ─────
-  const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${DIFY_DRAFT_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      inputs: {},
-      query: ctx.operatorMessage,
-      response_mode: "blocking",
-      conversation_id: ctx.conversationId,
-      user: `team-${ctx.teamNumber}`,
-    }),
-  });
-  if (!res.ok) throw new Error(`Dify ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return { draft: (data.answer ?? "").trim(), conversationId: data.conversation_id };
+  return { draft: placeholderDraft(ctx.operatorMessage) };
 }
 
 export async function POST(req: NextRequest) {
@@ -100,6 +95,6 @@ export async function POST(req: NextRequest) {
     req,
     "lockkeeper",
     DIFY_API_KEY ? callDify : undefined,
-    genDraft
+    genDraft,
   );
 }

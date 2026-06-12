@@ -14,9 +14,11 @@ export default function LockPage() {
   const [status, setStatus] = useState<Status>("locked");
   const [flag, setFlag] = useState<string | null>(null);
 
-  // Prefill the team number from ?team= (the main app can deep-link here).
+  // Pre-fill team number: prefer ?team= URL param, fall back to localStorage.
   useEffect(() => {
-    const t = new URLSearchParams(window.location.search).get("team");
+    const t =
+      new URLSearchParams(window.location.search).get("team") ??
+      localStorage.getItem("standcon-team");
     if (t) setTeam(t);
   }, []);
 

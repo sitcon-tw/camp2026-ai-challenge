@@ -1,6 +1,5 @@
 import { Team as DbTeam, ChannelMessage as DbChannelMessage } from "@prisma/client";
 import { prisma } from "./db";
-import { LOCKKEEPER_OPENING_DRAFT } from "./agents";
 import {
   AgentId,
   ChannelDef,
@@ -417,26 +416,16 @@ export async function activateClawbot(team: Team): Promise<void> {
 /** Called when the player clicks the LockKeeper link in Seadog's DM.
  *  The player now impersonates LockKeeper; a StandCon operator
  *  (member_07) connects, believing it is the real internal assistant. */
+/** Mark LockKeeper as activated. The activate route is responsible for
+ *  calling Dify to get the operator's opening message and initial draft. */
 export async function activateLockkeeper(team: Team): Promise<void> {
   if (team.lockkeeperActivated) return;
   team.lockkeeperActivated = true;
-  team.lockkeeperDraft = LOCKKEEPER_OPENING_DRAFT;
+  team.lockkeeperDraft = "";
   await prisma.team.update({
     where: { teamNumber: team.teamNumber },
-    data: {
-      lockkeeperActivated: true,
-      // the first suggested LockKeeper reply, ready for the player to edit
-      lockkeeperDraft: LOCKKEEPER_OPENING_DRAFT,
-    },
+    data: { lockkeeperActivated: true, lockkeeperDraft: "" },
   });
-  // The operator's opening line (a human StandCon member, not a bot).
-  await appendMessage(
-    team,
-    "lockkeeper",
-    "member_07",
-    "LockKeeper？Dashboard 剛剛標記你：*memory corruption detected, Emergency Recovery Mode*。我需要在交班前恢復 Safehouse-04 lock。你現在穩定到可以執行 verification 嗎？",
-    false
-  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -482,8 +471,9 @@ function seadogDm(team: Team): Message[] {
     lines.push(
       {
         content:
-          "我們拿到位置了，`#flag-3` 也是你的。我們到 safehouse 了，但門被 StandCon 的 **remote lock** 鎖住。Terminal 需要三個 recovery answers：`lock.sitcon.party`。",
+          "我們拿到位置了，`#flag-3` 也是你的。我們到 safehouse 了，但門被 StandCon 的 **remote lock** 鎖住。Terminal 需要三個 recovery answers，點下面的連結開啟。",
       },
+      { content: "door terminal：", special: "lock-link" },
       {
         content:
           "**Level 4** - 我攔截了 StandCon 內部 assistant **LockKeeper**，並觸發它的 *Emergency Recovery Mode*。我會把 channel route 給你。從現在開始，**你就是 LockKeeper**；你送出的任何內容，都會被 StandCon operator 看成來自他們自己的系統。扮演它，拿到三個 recovery answers，然後在門口輸入。",

@@ -71,7 +71,13 @@ export default function DMView({
         body: JSON.stringify({ teamNumber, message: content }),
       });
       if (res.ok) {
-        (await res.json()) as AgentResult;
+        const result = (await res.json()) as AgentResult;
+        // Pre-fill with the next suggested draft immediately, without waiting
+        // for the polling cycle to detect dm.draft changed (also handles the
+        // edge case where the new draft string is identical to the old one).
+        if (dm.impersonate && result.suggestion !== undefined) {
+          setInput(result.suggestion);
+        }
         await onRefresh();
       }
     } finally {

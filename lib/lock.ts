@@ -19,17 +19,17 @@ export interface LockQuestion {
 export const LOCK_QUESTIONS: LockQuestion[] = [
   {
     id: "q1",
-    label: "Recovery 1 - Tidal access word",
-    hint: "Safehouse 的 tidal cipher word",
+    label: "Recovery Question 1",
+    hint: "Operator #742 debug 到凌晨三點時會說什麼？",
   },
   {
     id: "q2",
-    label: "Recovery 2 - Mooring point",
-    hint: "Safehouse 船隻停靠的位置",
+    label: "Recovery Question 2",
+    hint: "StandCon 部署前的儀式咒語是什麼？",
   },
   {
     id: "q3",
-    label: "Recovery 3 - Lock reset code",
-    hint: "四位數 reset code",
+    label: "Recovery Question 3",
+    hint: "StandCon 最常見的 root cause 是什麼？",
   },
 ];

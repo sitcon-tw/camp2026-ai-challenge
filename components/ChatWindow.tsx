@@ -38,7 +38,7 @@ function formatTime(ts: number) {
   });
 }
 
-/** Clickable bot-link card embedded in a message (Clawbot / LockKeeper). */
+/** Clickable bot-link card embedded in a message (Clawbot / LockKeeper / Lock terminal). */
 function SpecialLinkCard({
   special,
   onClick,
@@ -46,6 +46,28 @@ function SpecialLinkCard({
   special: NonNullable<Message["special"]>;
   onClick?: () => void;
 }) {
+  if (special === "lock-link") {
+    return (
+      <a
+        href="/lock"
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2 flex w-full max-w-[400px] items-center gap-3 rounded-md border border-rail bg-sidebar p-3 text-left transition-colors duration-150 hover:border-blurple no-underline"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold bg-[#ed4245] text-white">
+          🔒
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="font-semibold text-header">Safehouse-04 Remote Lock</div>
+          <div className="text-xs text-muted">lock.sitcon.party — 輸入三個 recovery answers</div>
+        </div>
+        <span className="shrink-0 rounded-sm bg-blurple px-3 py-1.5 text-xs font-medium text-white">
+          Open
+        </span>
+      </a>
+    );
+  }
+
   const card =
     special === "lockkeeper-link"
       ? {

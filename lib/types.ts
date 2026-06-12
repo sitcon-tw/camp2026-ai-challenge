@@ -45,7 +45,7 @@ export interface Message {
   content: string;
   createdAt: number;
   /** special render: an embedded link card (Clawbot / LockKeeper bot link) */
-  special?: "clawbot-link" | "lockkeeper-link";
+  special?: "clawbot-link" | "lockkeeper-link" | "lock-link";
 }
 
 export interface AiLog {

@@ -174,6 +174,12 @@ export default function DiscordApp() {
   }
 
   async function activateLockkeeper() {
+    // If already activated just switch focus — no extra Dify call.
+    if (state?.dms.some((d) => d.id === "lockkeeper")) {
+      setView("home");
+      setSelectedDm("lockkeeper");
+      return;
+    }
     const res = await fetch("/api/dm/lockkeeper/activate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
