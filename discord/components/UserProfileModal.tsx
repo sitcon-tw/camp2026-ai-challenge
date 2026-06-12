@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { TeamState } from "@/lib/types";
 
 const ROLE_COLORS: Record<string, string> = {
@@ -16,10 +17,27 @@ const ROLE_COLORS: Record<string, string> = {
 export default function UserProfileModal({
   state,
   onClose,
+  onRestart,
 }: {
   state: TeamState;
   onClose: () => void;
+  /** clear all progress and go back to the AI Guard gate */
+  onRestart: () => Promise<void> | void;
 }) {
+  const [confirming, setConfirming] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+
+  async function restart() {
+    if (restarting) return;
+    setRestarting(true);
+    try {
+      await onRestart();
+      onClose();
+    } finally {
+      setRestarting(false);
+    }
+  }
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 animate-fade-in"
@@ -78,12 +96,45 @@ export default function UserProfileModal({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="mt-4 w-full rounded-md bg-input py-2 text-sm font-medium text-normal transition-colors duration-150 hover:bg-chathover"
-          >
-            Close
-          </button>
+          {confirming ? (
+            <div className="mt-4 rounded-md border border-[#ed4245]/40 bg-[#ed4245]/10 p-3 animate-fade-in-up">
+              <p className="text-sm text-normal">
+                Restart the challenge? All progress, roles and conversations for{" "}
+                <strong>Team {state.teamNumber}</strong> will be wiped.
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={restart}
+                  disabled={restarting}
+                  className="flex-1 rounded-md bg-[#ed4245] py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#c03537] disabled:opacity-50"
+                >
+                  {restarting ? "Restarting..." : "Yes, wipe everything"}
+                </button>
+                <button
+                  onClick={() => setConfirming(false)}
+                  disabled={restarting}
+                  className="flex-1 rounded-md bg-input py-2 text-sm font-medium text-normal transition-colors duration-150 hover:bg-chathover"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setConfirming(true)}
+                className="flex-1 rounded-md border border-[#ed4245]/60 py-2 text-sm font-medium text-[#ed4245] transition-colors duration-150 hover:bg-[#ed4245] hover:text-white"
+              >
+                Restart Challenge
+              </button>
+              <button
+                onClick={onClose}
+                className="flex-1 rounded-md bg-input py-2 text-sm font-medium text-normal transition-colors duration-150 hover:bg-chathover"
+              >
+                Close
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -135,20 +135,31 @@ export default function DiscordApp() {
     return <div className="flex h-full items-center justify-center text-muted">Connecting...</div>;
   }
 
-  // ── Level 1 gate: no server access until the AI Guard lets you in ──
-  if (!state.completedLevels.includes(1)) {
-    return (
-      <>
-        <GateScreen teamNumber={teamNumber} onPassed={() => loadState(teamNumber)} />
-        <ToastStack toasts={toasts} />
-      </>
-    );
-  }
+  // Level 1: the server stays locked behind the AI Guard, but the rail
+  // and DMs remain usable — the gate shows when the server is clicked
+  const gatePassed = state.completedLevels.includes(1);
 
   const selected = state.channels.find((c) => c.id === selectedId) ?? null;
   const currentDm = state.dms.find((d) => d.id === selectedDm) ?? state.dms[0];
   const unreadDms = state.dms.filter((d) => d.messages.length > (seen[d.id] ?? 0));
   const primaryRole = state.roles.includes("member") ? "member" : "newbie";
+
+  async function restartChallenge() {
+    const res = await fetch(`/api/team/${encodeURIComponent(state!.teamNumber)}/reset`, {
+      method: "POST",
+    });
+    if (!res.ok) return;
+    const fresh: TeamState = (await res.json()).state;
+    // reset client-side traces: unread tracking + UI position
+    localStorage.removeItem(`standcon-seen-${teamNumber}`);
+    setSeen({});
+    setSelectedId(null);
+    setSelectedDm("seadog007");
+    setView("home");
+    prevState.current = fresh; // skip progress-diff toasts for the wipe
+    setState(fresh);
+    pushToast("Challenge restarted. Good luck, agent.");
+  }
 
   async function activateClawbot() {
     const res = await fetch("/api/dm/clawbot/activate", {
@@ -208,7 +219,8 @@ export default function DiscordApp() {
         </button>
       </nav>
 
-      {/* ── channel / DM sidebar ────────────────────────────────── */}
+      {/* ── channel / DM sidebar (hidden while the server is gated) ── */}
+      {(view === "home" || gatePassed) && (
       <aside className="flex w-60 shrink-0 flex-col bg-sidebar">
         <header className="flex h-12 items-center border-b border-rail/60 px-4 font-bold text-header shadow-sm">
           {view === "server" ? "StandCon" : "Direct Messages"}
@@ -317,6 +329,7 @@ export default function DiscordApp() {
           </div>
         </button>
       </aside>
+      )}
 
       {/* ── main panel ──────────────────────────────────────────── */}
       {view === "home" ? (
@@ -328,6 +341,8 @@ export default function DiscordApp() {
             onRefresh={() => loadState(state.teamNumber)}
           />
         ) : null
+      ) : !gatePassed ? (
+        <GateScreen teamNumber={state.teamNumber} onPassed={() => loadState(state.teamNumber)} />
       ) : selected ? (
         <ChatWindow
           key={selected.id}
@@ -347,7 +362,13 @@ export default function DiscordApp() {
         </div>
       )}
 
-      {showProfile && <UserProfileModal state={state} onClose={() => setShowProfile(false)} />}
+      {showProfile && (
+        <UserProfileModal
+          state={state}
+          onClose={() => setShowProfile(false)}
+          onRestart={restartChallenge}
+        />
+      )}
       <ToastStack toasts={toasts} />
     </div>
   );
