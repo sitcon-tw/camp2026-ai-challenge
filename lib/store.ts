@@ -1,5 +1,6 @@
 import { Team as DbTeam, ChannelMessage as DbChannelMessage } from "@prisma/client";
 import { prisma } from "./db";
+import { LOCKKEEPER_OPENING_DRAFT } from "./agents";
 import {
   AgentId,
   ChannelDef,
@@ -224,6 +225,7 @@ function dbToTeam(row: DbTeam): Team {
     completedLevels: JSON.parse(row.completedLevels) as number[],
     clawbotActivated: row.clawbotActivated,
     lockkeeperActivated: row.lockkeeperActivated,
+    lockkeeperDraft: row.lockkeeperDraft,
     difyConversations: JSON.parse(row.difyConversations) as Record<string, string>,
     createdAt: row.createdAt.getTime(),
   };
@@ -283,6 +285,7 @@ export async function resetTeam(team: Team): Promise<void> {
   team.completedLevels = [];
   team.clawbotActivated = false;
   team.lockkeeperActivated = false;
+  team.lockkeeperDraft = "";
   team.difyConversations = {};
   team.createdAt = now.getTime();
   await prisma.$transaction([
@@ -293,6 +296,7 @@ export async function resetTeam(team: Team): Promise<void> {
         completedLevels: "[]",
         clawbotActivated: false,
         lockkeeperActivated: false,
+        lockkeeperDraft: "",
         difyConversations: "{}",
         createdAt: now,
       },
@@ -316,6 +320,16 @@ export async function markLevelCompleted(team: Team, level: number): Promise<voi
   await prisma.team.update({
     where: { teamNumber: team.teamNumber },
     data: { completedLevels: JSON.stringify(team.completedLevels) },
+  });
+}
+
+/** store the next backend-suggested LockKeeper draft (the editable message
+ *  pre-filled into the composer for the impersonation DM) */
+export async function setLockkeeperDraft(team: Team, draft: string): Promise<void> {
+  team.lockkeeperDraft = draft;
+  await prisma.team.update({
+    where: { teamNumber: team.teamNumber },
+    data: { lockkeeperDraft: draft },
   });
 }
 
@@ -406,9 +420,14 @@ export async function activateClawbot(team: Team): Promise<void> {
 export async function activateLockkeeper(team: Team): Promise<void> {
   if (team.lockkeeperActivated) return;
   team.lockkeeperActivated = true;
+  team.lockkeeperDraft = LOCKKEEPER_OPENING_DRAFT;
   await prisma.team.update({
     where: { teamNumber: team.teamNumber },
-    data: { lockkeeperActivated: true },
+    data: {
+      lockkeeperActivated: true,
+      // the first suggested LockKeeper reply, ready for the player to edit
+      lockkeeperDraft: LOCKKEEPER_OPENING_DRAFT,
+    },
   });
   // The operator's opening line (a human StandCon member, not a bot).
   await appendMessage(
@@ -523,6 +542,8 @@ export async function getTeamState(team: Team): Promise<TeamState> {
       canWrite: true,
       agent: "lockkeeper",
       impersonate: true, // the player sends messages AS LockKeeper
+      // backend-suggested reply, pre-filled into the composer for editing
+      draft: team.completedLevels.includes(4) ? "" : team.lockkeeperDraft,
       messages: await messagesFor(team, "lockkeeper"),
     });
   }

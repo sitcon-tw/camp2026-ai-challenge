@@ -8,6 +8,7 @@ import {
   markLevelCompleted,
   permFor,
   saveDifyConversations,
+  setLockkeeperDraft,
 } from "./store";
 import { prisma } from "./db";
 import { AgentId, AgentResult, RoleId } from "./types";
@@ -26,10 +27,28 @@ export interface AgentCallResult {
 
 export type AgentCaller = (ctx: AgentCallContext) => Promise<AgentCallResult>;
 
+/** generate the next suggested draft for an impersonation DM (LockKeeper) */
+export interface DraftContext {
+  teamNumber: string;
+  /** the AI/operator's latest reply — what the draft should respond to */
+  operatorMessage: string;
+  /** Dify conversation_id for the draft model ("" on first turn) */
+  conversationId: string;
+}
+
+export interface DraftResult {
+  draft: string;
+  conversationId?: string;
+}
+
+export type DraftGenerator = (ctx: DraftContext) => Promise<DraftResult>;
+
 export async function handleAgentRequest(
   req: NextRequest,
   agentId: AgentId,
-  callAI?: AgentCaller
+  callAI?: AgentCaller,
+  /** impersonation DMs (LockKeeper): produce the next editable draft */
+  genDraft?: DraftGenerator
 ) {
   const body = await req.json().catch(() => null);
   const teamNumber = String(body?.teamNumber ?? "");
@@ -106,6 +125,30 @@ export async function handleAgentRequest(
   // Record the AI's reply (the LockKeeper operator is a human, not a bot).
   await appendMessage(team, meta.convoKey, meta.displayName, reply, meta.replyIsBot ?? true);
 
+  // impersonation DMs: suggest the next draft the player edits & sends.
+  // (skip once the level is done — no further turns are needed)
+  let suggestion: string | undefined;
+  if (genDraft && !alreadyDone) {
+    try {
+      team.difyConversations ??= {};
+      const draftKey = `${agentId}-draft`;
+      const draftRes = await genDraft({
+        teamNumber,
+        operatorMessage: reply,
+        conversationId: team.difyConversations[draftKey] ?? "",
+      });
+      suggestion = draftRes.draft;
+      if (draftRes.conversationId) {
+        team.difyConversations[draftKey] = draftRes.conversationId;
+        await saveDifyConversations(team);
+      }
+    } catch (err) {
+      console.error(`[ai] ${agentId} draft generation failed:`, err);
+      suggestion = ""; // composer stays empty; player can still type
+    }
+    await setLockkeeperDraft(team, suggestion ?? "");
+  }
+
   await prisma.aiLog.create({
     data: {
       teamNumber: team.teamNumber,
@@ -120,6 +163,6 @@ export async function handleAgentRequest(
     `[ai-log] team=${team.teamNumber} agent=${agentId} passed=${passed} msg=${JSON.stringify(message)}`
   );
 
-  const result: AgentResult = { reply, levelPassed: passed, grantedRoles };
+  const result: AgentResult = { reply, levelPassed: passed, grantedRoles, suggestion };
   return NextResponse.json(result);
 }

@@ -33,14 +33,31 @@ export default function DMView({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const avatar = dmAvatar(dm.id);
-  // Who is on the other end. For LockKeeper the player IS the bot, so the
-  // replier is the StandCon operator.
+
+  // grow the composer with its content, up to a max, then scroll (Discord-like)
+  useEffect(() => {
+    const ta = inputRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+  }, [input]);
+  // who is on the other end (replies to the player). For LockKeeper the
+  // player IS the bot, so the replier is the StandCon operator.
   const replier = dm.impersonate ? "member_07" : dm.name;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
   }, [dm.messages.length, sending]);
+
+  // impersonation DMs (LockKeeper): pre-fill the composer with the
+  // backend-suggested draft so the player edits instead of writing from
+  // scratch. Keyed on dm.draft, so polling (same string) won't clobber the
+  // player's in-progress edits — only a NEW draft (next turn) re-fills.
+  useEffect(() => {
+    if (dm.impersonate) setInput(dm.draft ?? "");
+  }, [dm.draft, dm.impersonate]);
 
   async function send() {
     const content = input.trim();
@@ -127,19 +144,37 @@ export default function DMView({
 
       <div className="px-4 pb-6">
         {dm.canWrite ? (
-          <div
-            className={`flex items-center rounded-lg bg-input px-4 transition-opacity duration-150 ${
-              sending ? "animate-send-pop opacity-70" : "opacity-100"
-            }`}
-          >
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && send()}
-              placeholder={dm.impersonate ? "以 LockKeeper 身分回覆..." : `Message @${dm.name}`}
-              className="flex-1 bg-transparent py-3 text-normal outline-none placeholder:text-muted/60"
-            />
-          </div>
+          <>
+            {dm.impersonate && (
+              <div className="mb-1.5 flex items-center gap-1.5 px-1 text-xs text-muted">
+                <span>✏️</span>
+                <span>
+                  Suggested LockKeeper reply — <span className="text-normal">edit it</span>, then
+                  press Enter to send as the bot.
+                </span>
+              </div>
+            )}
+            <div
+              className={`flex items-end rounded-lg bg-input px-4 transition-opacity duration-150 ${
+                sending ? "animate-send-pop opacity-70" : "opacity-100"
+              }`}
+            >
+              <textarea
+                ref={inputRef}
+                value={input}
+                rows={1}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    send();
+                  }
+                }}
+                placeholder={dm.impersonate ? "Reply as LockKeeper..." : `Message @${dm.name}`}
+                className="flex-1 resize-none overflow-y-auto bg-transparent py-3 text-normal leading-6 outline-none placeholder:text-muted/60"
+              />
+            </div>
+          </>
         ) : (
           <div className="rounded-lg bg-input/50 px-4 py-3 text-sm text-muted">
             {dm.name} 會在任務推進時聯絡你。你不能在這個 secure channel 回覆。

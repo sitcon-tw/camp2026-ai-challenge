@@ -161,9 +161,18 @@ export default function ChatWindow({
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const Icon = channelIcon(channel);
   const locked = channel.perm === "s";
   const canWrite = channel.perm === "w";
+
+  // grow the composer with its content, up to a max, then scroll (Discord-like)
+  useEffect(() => {
+    const ta = inputRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
+  }, [input]);
 
   const load = useCallback(async () => {
     if (locked) return;
@@ -259,20 +268,27 @@ export default function ChatWindow({
           <div className="px-4 pb-6">
             {canWrite ? (
               <div
-                className={`flex items-center rounded-lg bg-input px-4 transition-opacity duration-150 ${
+                className={`flex items-end rounded-lg bg-input px-4 transition-opacity duration-150 ${
                   sending ? "animate-send-pop opacity-70" : "opacity-100"
                 }`}
               >
-                <input
+                <textarea
+                  ref={inputRef}
                   value={input}
+                  rows={1}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.nativeEvent.isComposing && send()}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                      e.preventDefault();
+                      send();
+                    }
+                  }}
                   placeholder={
                     channel.type === "ai"
                       ? `Message ${channel.name}...`
                       : `Message #${channel.name}`
                   }
-                  className="flex-1 bg-transparent py-3 text-normal outline-none placeholder:text-muted/60"
+                  className="flex-1 resize-none overflow-y-auto bg-transparent py-3 text-normal leading-6 outline-none placeholder:text-muted/60"
                 />
               </div>
             ) : (

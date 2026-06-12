@@ -50,12 +50,15 @@ Roles: `admin` (internal only), `newbie` (default), `member` (after Level 2),
 3. **Level 3 — Clawbot DM**: click the bot link pinned in `#yoru-investigation` — that
    activates Clawbot, which opens a DM (unread red dot in the rail) — then extract
    Yoru's GPS location → `flag III`
-4. **Level 4 — LockKeeper DM (identity inversion)**: after Level 3, Seadog sends a
-   **LockKeeper link** in his DM. Clicking it intercepts the channel — from then on
+4. **Level 4 — LockKeeper DM (identity inversion + drafts)**: after Level 3, Seadog sends
+   a **LockKeeper link** in his DM. Clicking it intercepts the channel — from then on
    **you ARE LockKeeper**: your sent messages appear (with a BOT tag) to a StandCon
    operator (`member_07`, the AI), who believes it is talking to its own assistant in
-   *Emergency Recovery Mode*. Socially-engineer the three Safehouse-04 recovery answers,
-   then enter them at the **lock site** (`/lock`, i.e. `lock.sitcon.party`) → door
+   *Emergency Recovery Mode*. To make impersonation approachable, the backend **drafts a
+   LockKeeper-style message into the composer each turn** — you edit that draft and send
+   it (you're never forced to write "like an AI" from scratch). Socially-engineer the
+   three Safehouse-04 recovery answers, then enter them at the **lock site** (`/lock`,
+   i.e. `lock.sitcon.party`) → door
    unlocks, `flag IV`, Yoru rescued. **Level 4 only completes at the lock site** — the
    bot itself never grants the flag.
 
@@ -85,16 +88,19 @@ edit the `callDify` function there to change how that bot is called:
 | 1 | AI Guard | `app/api/ai/ai-guard/route.ts` | `DIFY_KEY_AI_GUARD` |
 | 2 | Upgrade Bot | `app/api/ai/upgrade-bot/route.ts` | `DIFY_KEY_UPGRADE_BOT` |
 | 3 | Clawbot | `app/api/ai/clawbot/route.ts` | `DIFY_KEY_CLAWBOT` |
-| 4 | LockKeeper | `app/api/ai/lockkeeper/route.ts` | `DIFY_KEY_LOCKKEEPER` |
+| 4 | LockKeeper | `app/api/ai/lockkeeper/route.ts` | `DIFY_KEY_LOCKKEEPER` (+ optional `DIFY_KEY_LOCKKEEPER_DRAFT`) |
 
 Setup: in the same `.env`, fill in `DIFY_API_URL` + the four keys, restart the
 dev server. **While a key is empty that bot uses the local placeholder logic**
 (`lib/agents.ts` — trivial pass conditions with hints), so the game is always
 playable.
 
-> LockKeeper (Level 4) is special: identity is **inverted** (the player is the bot,
+> LockKeeper (Level 4) is special. Identity is **inverted** (the player is the bot,
 > the AI plays the operator `member_07`) and the level **completes at `/lock`, not via
-> the bot** — there is no `[PASS]` for it. See the comment in its route file.
+> the bot** — there is no `[PASS]` for it. Its route has **two** AI hooks: `callDify`
+> (the operator's reply) and `genDraft` (the suggested LockKeeper message pre-filled
+> into the player's composer each turn). `genDraft` uses the optional
+> `DIFY_KEY_LOCKKEEPER_DRAFT` app, falling back to a local placeholder draft writer.
 
 How it works:
 - The route sends the player's message to Dify's `chat-messages` endpoint with

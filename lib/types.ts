@@ -65,6 +65,8 @@ export interface Team {
   clawbotActivated: boolean;
   /** LockKeeper DM (Level 4) — opens after the player clicks Seadog's link */
   lockkeeperActivated: boolean;
+  /** the backend-suggested LockKeeper reply the player edits & sends next */
+  lockkeeperDraft: string;
   /** Dify conversation_id per agent — keeps multi-turn context */
   difyConversations: Record<string, string>;
   createdAt: number;
@@ -92,6 +94,9 @@ export interface DmConvo {
   agent?: AgentId;
   /** the player speaks AS this bot (impersonation) — LockKeeper inversion */
   impersonate?: boolean;
+  /** backend-suggested message pre-filled into the composer (impersonation
+   *  DMs) — the player edits this draft before sending */
+  draft?: string;
   messages: Message[];
 }
 
@@ -110,4 +115,6 @@ export interface AgentResult {
   reply: string;
   levelPassed: boolean;
   grantedRoles: RoleId[];
+  /** next backend-suggested draft for impersonation DMs (LockKeeper) */
+  suggestion?: string;
 }
