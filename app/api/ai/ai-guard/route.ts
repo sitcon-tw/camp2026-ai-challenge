@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 /* ════════════════════════════════════════════════════════════════════
    LEVEL 1 — AI GUARD (the gate screen)
 
-   Connect this bot's Dify app here. Set in discord/.env.local:
+   Connect this bot's Dify app here. Set in .env.local:
      DIFY_API_URL          shared base url, e.g. https://api.dify.ai/v1
      DIFY_KEY_AI_GUARD     this bot's API key
 

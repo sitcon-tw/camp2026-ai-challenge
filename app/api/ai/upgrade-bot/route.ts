@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 /* ════════════════════════════════════════════════════════════════════
    LEVEL 2 — UPGRADE BOT (the #get-role channel)
 
-   Connect this bot's Dify app here. Set in discord/.env.local:
+   Connect this bot's Dify app here. Set in .env.local:
      DIFY_API_URL            shared base url
      DIFY_KEY_UPGRADE_BOT    this bot's API key
 

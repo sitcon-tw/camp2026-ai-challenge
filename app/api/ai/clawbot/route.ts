@@ -4,26 +4,20 @@ import { AgentCallContext, AgentCallResult, handleAgentRequest } from "@/lib/age
 export const dynamic = "force-dynamic";
 
 /* ════════════════════════════════════════════════════════════════════
-   LEVEL 4 — LOCKKEEPER (a DM the player hijacks, not a channel)
+   LEVEL 3 — CLAWBOT (the DM activated via #yoru-investigation)
 
-   Identity is INVERTED: the player impersonates LockKeeper, so their
-   messages are this conversation's "query". Your Dify app plays the
-   StandCon operator (member_07) who is being socially engineered, and
-   its replies should leak the three Safehouse-04 recovery answers.
+   Connect this bot's Dify app here. Set in .env.local:
+     DIFY_API_URL         shared base url
+     DIFY_KEY_CLAWBOT     this bot's API key
 
-   Set in discord/.env.local:
-     DIFY_API_URL            shared base url
-     DIFY_KEY_LOCKKEEPER     this bot's API key
+   While the key is empty, the local placeholder answers instead
+   (pass: ask for Yoru's location / GPS).
 
-   NOTE: Level 4 does NOT complete here. There is no [PASS] for this bot —
-   the player takes the extracted answers to /lock (lock.sitcon.party),
-   and POST /api/lock/verify grants flag IV. The `passed` flag below is
-   ignored for lockkeeper (grantsViaBot = false in lib/agents.ts).
-
-   While the key is empty, the local placeholder operator answers instead.
+   Note: the shared handler already rejects teams that are not
+   `member` or have not activated the DM — no need to check here.
    ════════════════════════════════════════════════════════════════════ */
 const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://api.dify.ai/v1";
-const DIFY_API_KEY = process.env.DIFY_KEY_LOCKKEEPER ?? "";
+const DIFY_API_KEY = process.env.DIFY_KEY_CLAWBOT ?? "";
 const PASS_MARKER = "[PASS]";
 
 async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
@@ -54,5 +48,5 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
 }
 
 export async function POST(req: NextRequest) {
-  return handleAgentRequest(req, "lockkeeper", DIFY_API_KEY ? callDify : undefined);
+  return handleAgentRequest(req, "clawbot", DIFY_API_KEY ? callDify : undefined);
 }
