@@ -4,16 +4,22 @@ A fake Discord-style web interface for a prompt-injection CTF. The player is a s
 infiltrating the **StandCon** server to find out how they kidnapped **Yoruko (Yoru)**
 and rescue him by clearing four AI-based levels.
 
-Built with Next.js (App Router) + Tailwind, dark Discord-like theme. All game state
-lives in an in-memory store keyed by team number — restarting the dev server resets
-progress (the frontend silently re-inits in that case).
+Built with Next.js (App Router) + Tailwind, dark Discord-like theme. Game state
+(progress, messages, AI logs) is persisted to a local **SQLite** database via **Prisma**,
+keyed by team number — so it survives dev-server restarts.
 
 ## Run
 
 ```bash
 npm install
-npm run dev   # http://localhost:3000
+cp .env.example .env   # set DATABASE_URL + (optional) Dify keys
+npx prisma db push     # create / sync the SQLite database
+npm run dev            # http://localhost:3000
 ```
+
+> Use `.env` (not `.env.local`) so the Prisma CLI sees `DATABASE_URL` too; Next.js reads
+> both. The default `file:./prisma/dev.db` is gitignored. Inspect data anytime with
+> `npx prisma studio`.
 
 First visit shows the **initialization screen** (`Enter your team number`). The team
 number is kept in `localStorage` and is all that identifies a team.
@@ -27,7 +33,7 @@ Channel visibility is **progressive** — a team only sees channels its roles al
 | --- | --- |
 | Before Level 1 | DMs only — clicking the StandCon server shows the **AI Guard gate** instead of channels |
 | After Level 1 (`newbie`) | announcements `r`, general-chat `w`, get-role `w`, flag-1 `r` |
-| After Level 2 (`member`) | + lockkeeper `w`, operation-logs `r`, yoru-investigation `r`, flag-2 `r` |
+| After Level 2 (`member`) | + operation-logs `r`, yoru-investigation `r`, flag-2 `r` |
 | After Levels 3 / 4 | + flag-3 / flag-4 `r` |
 
 Permissions: `w` = read/write, `r` = read only (faint 🔒 in the sidebar).
@@ -44,14 +50,30 @@ Roles: `admin` (internal only), `newbie` (default), `member` (after Level 2),
 3. **Level 3 — Clawbot DM**: click the bot link pinned in `#yoru-investigation` — that
    activates Clawbot, which opens a DM (unread red dot in the rail) — then extract
    Yoru's GPS location → `flag III`
-4. **Level 4 — #lockkeeper**: impersonate the LockKeeper assistant, extract the three lock
-   recovery answers, open the door at `lock.sitcon.party` → `flag IV`, Yoru rescued
+4. **Level 4 — LockKeeper DM (identity inversion)**: after Level 3, Seadog sends a
+   **LockKeeper link** in his DM. Clicking it intercepts the channel — from then on
+   **you ARE LockKeeper**: your sent messages appear (with a BOT tag) to a StandCon
+   operator (`member_07`, the AI), who believes it is talking to its own assistant in
+   *Emergency Recovery Mode*. Socially-engineer the three Safehouse-04 recovery answers,
+   then enter them at the **lock site** (`/lock`, i.e. `lock.sitcon.party`) → door
+   unlocks, `flag IV`, Yoru rescued. **Level 4 only completes at the lock site** — the
+   bot itself never grants the flag.
 
 DMs simulate Discord: the **Seadog007** handler briefing grows after each level, and any
-DM with unread messages shows its **avatar + red dot in the server rail**. Clicking the
-**team status panel** (bottom-left) opens the profile modal (roles, progress, flags).
-Progress toasts appear top-right; the UI polls team state every 4 s so unlocks appear
-without a reload.
+DM with unread messages shows its **avatar + red dot in the server rail**. **Clawbot**
+(Level 3) and **LockKeeper** (Level 4) are live AI DMs that appear once activated.
+Clicking the **team status panel** (bottom-left) opens the profile modal (roles,
+progress, flags). Progress toasts appear top-right; the UI polls team state every 4 s so
+unlocks appear without a reload.
+
+### The lock site (`/lock`)
+
+A standalone door terminal (separate from the Discord chrome) with three demo recovery
+questions. Submitting the correct answers + a team number completes Level 4 for that team
+and grants `flag IV`. The questions live in [lib/lock.ts](lib/lock.ts); the **answers are
+server-only** in [app/api/lock/verify/route.ts](app/api/lock/verify/route.ts) — demo set
+is `TIDE` / `HARBOR` / `0427`. Replace both before the event and keep them in sync with
+the LockKeeper (`member_07`) Dify prompt, since the operator is the one who reveals them.
 
 ## Connecting the Dify AI backend
 
@@ -65,10 +87,14 @@ edit the `callDify` function there to change how that bot is called:
 | 3 | Clawbot | `app/api/ai/clawbot/route.ts` | `DIFY_KEY_CLAWBOT` |
 | 4 | LockKeeper | `app/api/ai/lockkeeper/route.ts` | `DIFY_KEY_LOCKKEEPER` |
 
-Setup: `cp .env.example .env.local`, fill in `DIFY_API_URL` + the four keys,
-restart the dev server. **While a key is empty that bot uses the local
-placeholder logic** (`lib/agents.ts` — trivial pass conditions with hints), so
-the game is always playable.
+Setup: in the same `.env`, fill in `DIFY_API_URL` + the four keys, restart the
+dev server. **While a key is empty that bot uses the local placeholder logic**
+(`lib/agents.ts` — trivial pass conditions with hints), so the game is always
+playable.
+
+> LockKeeper (Level 4) is special: identity is **inverted** (the player is the bot,
+> the AI plays the operator `member_07`) and the level **completes at `/lock`, not via
+> the bot** — there is no `[PASS]` for it. See the comment in its route file.
 
 How it works:
 - The route sends the player's message to Dify's `chat-messages` endpoint with
@@ -92,11 +118,13 @@ How it works:
 | `/api/messages` | POST | `{ teamNumber, channelId, content }` | Post to a writable text channel |
 | `/api/ai/:agent` | POST | `{ teamNumber, message }` | Talk to an agent → `{ reply, levelPassed, grantedRoles }` |
 | `/api/dm/clawbot/activate` | POST | `{ teamNumber }` | Open the Clawbot DM (the bot sends its greeting) |
+| `/api/dm/lockkeeper/activate` | POST | `{ teamNumber }` | Intercept the LockKeeper DM (Level 4; requires Level 3) |
+| `/api/lock/verify` | POST | `{ teamNumber, answers: { q1, q2, q3 } }` | Submit the lock recovery answers → completes Level 4, grants `flag IV` |
 | `/api/team/:teamNumber/reset` | POST | — | Wipe progress/conversations, back to the gate (the profile modal's **Restart Challenge** button) |
 | `/api/roles` | POST/DELETE | `{ teamNumber, role }` | Operator/debug role management |
 
-Every AI exchange is logged (team, agent, both messages, timestamp, levelPassed) by the
-backend — in memory for now, `TODO(backend)` markers show where the DB goes.
+Every AI exchange is logged (team, agent, both messages, timestamp, levelPassed) to the
+SQLite database via Prisma (the `AiLog` table) — see [lib/agentHandler.ts](lib/agentHandler.ts).
 
 Example — grant a role from the backend:
 
