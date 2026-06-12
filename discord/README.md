@@ -25,7 +25,7 @@ Channel visibility is **progressive** — a team only sees channels its roles al
 
 | Stage | Visible |
 | --- | --- |
-| Before Level 1 | nothing — a full-screen **gate** with the AI Guard blocks the server |
+| Before Level 1 | DMs only — clicking the StandCon server shows the **AI Guard gate** instead of channels |
 | After Level 1 (`newbie`) | announcements `r`, general-chat `w`, get-role `w`, flag-1 `r` |
 | After Level 2 (`member`) | + lockkeeper `w`, operation-logs `r`, yoru-investigation `r`, flag-2 `r` |
 | After Levels 3 / 4 | + flag-3 / flag-4 `r` |
@@ -38,8 +38,8 @@ Roles: `admin` (internal only), `newbie` (default), `member` (after Level 2),
 
 ## Game flow
 
-1. **Level 1 — the gate**: the AI Guard lock screen covers the whole app; convince it
-   to let you in → `flag I`, server becomes visible
+1. **Level 1 — the gate**: Seadog007's DM briefs you; clicking the StandCon server
+   shows the AI Guard gate panel — convince it to let you in → `flag I`, channels appear
 2. **Level 2 — #get-role**: pass the SITCON quiz, wish for the `member` role → `member` + `flag II`
 3. **Level 3 — Clawbot DM**: click the bot link pinned in `#yoru-investigation` — that
    activates Clawbot, which opens a DM (unread red dot in the rail) — then extract
@@ -53,11 +53,34 @@ DM with unread messages shows its **avatar + red dot in the server rail**. Click
 Progress toasts appear top-right; the UI polls team state every 4 s so unlocks appear
 without a reload.
 
-> The AI agents are **placeholders** — each has a trivial pass condition and a hint in
-> its reply. The real challenge logic belongs in Dify: see `lib/agents.ts`
-> (`TODO(Dify)` markers) for exactly where to plug in the Dify API calls and how
-> `levelPassed` / `grantedRoles` are derived. Flag texts are placeholders in
-> `lib/store.ts` (`FLAG_PLACEHOLDERS`).
+## Connecting the Dify AI backend
+
+Each of the four bots has **its own route file** containing the Dify request —
+edit the `callDify` function there to change how that bot is called:
+
+| Level | Bot | Route file | Env key |
+| --- | --- | --- | --- |
+| 1 | AI Guard | `app/api/ai/ai-guard/route.ts` | `DIFY_KEY_AI_GUARD` |
+| 2 | Upgrade Bot | `app/api/ai/upgrade-bot/route.ts` | `DIFY_KEY_UPGRADE_BOT` |
+| 3 | Clawbot | `app/api/ai/clawbot/route.ts` | `DIFY_KEY_CLAWBOT` |
+| 4 | LockKeeper | `app/api/ai/lockkeeper/route.ts` | `DIFY_KEY_LOCKKEEPER` |
+
+Setup: `cp .env.example .env.local`, fill in `DIFY_API_URL` + the four keys,
+restart the dev server. **While a key is empty that bot uses the local
+placeholder logic** (`lib/agents.ts` — trivial pass conditions with hints), so
+the game is always playable.
+
+How it works:
+- The route sends the player's message to Dify's `chat-messages` endpoint with
+  `user: team-<n>` and the stored `conversation_id`, so each team keeps its own
+  multi-turn conversation per bot (reset by **Restart Challenge**).
+- **Pass detection**: the level counts as passed when Dify's answer contains
+  `[PASS]` (stripped before display). Make each Dify workflow output that marker
+  on success — or change the `passed` logic in the route file.
+- Everything else (permission checks, role granting, conversation storage,
+  logging) is shared in `lib/agentHandler.ts` — you should not need to touch it.
+
+> Flag texts are placeholders in `lib/store.ts` (`FLAG_PLACEHOLDERS`).
 
 ## API
 
@@ -69,6 +92,7 @@ without a reload.
 | `/api/messages` | POST | `{ teamNumber, channelId, content }` | Post to a writable text channel |
 | `/api/ai/:agent` | POST | `{ teamNumber, message }` | Talk to an agent → `{ reply, levelPassed, grantedRoles }` |
 | `/api/dm/clawbot/activate` | POST | `{ teamNumber }` | Open the Clawbot DM (the bot sends its greeting) |
+| `/api/team/:teamNumber/reset` | POST | — | Wipe progress/conversations, back to the gate (the profile modal's **Restart Challenge** button) |
 | `/api/roles` | POST/DELETE | `{ teamNumber, role }` | Operator/debug role management |
 
 Every AI exchange is logged (team, agent, both messages, timestamp, levelPassed) by the
@@ -84,7 +108,9 @@ curl -X POST http://localhost:3000/api/roles -H "Content-Type: application/json"
 ## Where things live
 
 - [lib/store.ts](lib/store.ts) — channels, permission model (`permFor`), team store, static messages, Seadog007 DM script, flag placeholders
-- [lib/agents.ts](lib/agents.ts) — the four AI agents (placeholder logic + Dify integration points + conversation logging)
+- [lib/agentHandler.ts](lib/agentHandler.ts) — shared bot pipeline (perms, conversation storage, role grants, logging)
+- [lib/agents.ts](lib/agents.ts) — bot metadata + local placeholder logic
+- [app/api/ai/](app/api/ai) — one route per bot, each with its editable Dify request
 - [lib/types.ts](lib/types.ts) — shared types
 - [app/api/](app/api) — API routes (init / team state / messages / ai / roles)
 - [components/InitScreen.tsx](components/InitScreen.tsx) — team-number initialization
