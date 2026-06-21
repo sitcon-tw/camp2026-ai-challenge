@@ -114,6 +114,15 @@ export function MessageRow({
   /** Click handler for embedded link cards (e.g. the Clawbot bot link). */
   onSpecial?: () => void;
 }) {
+  if (msg.special === "divider") {
+    return (
+      <div className="flex items-center gap-3 px-6 py-3 text-xs text-muted/60 select-none">
+        <div className="h-px flex-1 bg-muted/20" />
+        <span className="tracking-wide">{msg.content}</span>
+        <div className="h-px flex-1 bg-muted/20" />
+      </div>
+    );
+  }
   return (
     <div className="group flex gap-4 px-4 py-1.5 hover:bg-chathover animate-fade-in-up transition-colors duration-100">
       <div

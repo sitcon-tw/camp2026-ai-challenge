@@ -217,10 +217,14 @@ export default function DiscordApp() {
                 setSelectedDm(d.id);
               }}
               title={`${d.name} - 新訊息`}
-              className="relative flex h-12 w-12 items-center justify-center rounded-3xl text-lg font-bold transition-all duration-200 hover:rounded-2xl animate-scale-in"
-              style={{ background: a.bg, color: a.fg }}
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl transition-all duration-200 hover:rounded-2xl animate-scale-in overflow-hidden"
+              style={a.img ? undefined : { background: a.bg, color: a.fg }}
             >
-              {a.label}
+              {a.img ? (
+                <img src={a.img} alt={a.label} className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-lg font-bold">{a.label}</span>
+              )}
               <span className="absolute -right-0.5 -bottom-0.5 h-4 w-4 rounded-full border-[3px] border-rail bg-[#ed4245]" />
             </button>
           );
@@ -298,10 +302,14 @@ export default function DiscordApp() {
                     >
                       <div className="relative shrink-0">
                         <div
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold"
-                          style={{ background: a.bg, color: a.fg }}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold overflow-hidden"
+                          style={a.img ? undefined : { background: a.bg, color: a.fg }}
                         >
-                          {a.label}
+                          {a.img ? (
+                            <img src={a.img} alt={a.label} className="h-full w-full object-cover" />
+                          ) : (
+                            a.label
+                          )}
                         </div>
                         {unread && (
                           <span className="absolute -right-0.5 -bottom-0.5 h-3 w-3 rounded-full border-2 border-sidebar bg-[#ed4245]" />

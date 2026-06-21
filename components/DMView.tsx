@@ -5,9 +5,31 @@ import { AgentResult, DmConvo } from "@/lib/types";
 import { MessageRow } from "./ChatWindow";
 
 export function dmAvatar(id: DmConvo["id"]) {
-  if (id === "clawbot") return { bg: "#f47b67", fg: "#000", label: "CB" };
-  if (id === "lockkeeper") return { bg: "#3ba55d", fg: "#000", label: "LK" };
-  return { bg: "#57f287", fg: "#000", label: "S" };
+  if (id === "clawbot") return { bg: "#f47b67", fg: "#000", label: "CB", img: undefined };
+  if (id === "lockkeeper") return { bg: "#3ba55d", fg: "#000", label: "LK", img: undefined };
+  return { bg: "#57f287", fg: "#000", label: "S", img: "https://seadog007.me/images/avatar.png" };
+}
+
+type AvatarInfo = ReturnType<typeof dmAvatar>;
+
+function AvatarImg({ a, size }: { a: AvatarInfo; size: string }) {
+  if (a.img) {
+    return (
+      <img
+        src={a.img}
+        alt={a.label}
+        className={`${size} rounded-full object-cover`}
+      />
+    );
+  }
+  return (
+    <div
+      className={`${size} flex items-center justify-center rounded-full text-sm font-bold`}
+      style={{ background: a.bg, color: a.fg }}
+    >
+      {a.label}
+    </div>
+  );
 }
 
 /**
@@ -94,24 +116,14 @@ export default function DMView({
   return (
     <div className="flex min-w-0 flex-1 flex-col bg-chat animate-fade-in" key={dm.id}>
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-rail/60 px-4 shadow-sm">
-        <div
-          className="flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold"
-          style={{ background: avatar.bg, color: avatar.fg }}
-        >
-          {avatar.label}
-        </div>
+        <AvatarImg a={avatar} size="h-6 w-6 text-[10px]" />
         <span className="font-bold text-header">{dm.name}</span>
         <span className="text-xs text-muted">{subtitle}</span>
       </header>
 
       <div className="flex-1 overflow-y-auto py-4">
         <div className="px-4 pb-4">
-          <div
-            className="flex h-16 w-16 items-center justify-center rounded-full text-xl font-black"
-            style={{ background: avatar.bg, color: avatar.fg }}
-          >
-            {avatar.label}
-          </div>
+          <AvatarImg a={avatar} size="h-16 w-16 text-xl font-black" />
           <h3 className="mt-2 text-2xl font-bold text-header">{dm.name}</h3>
           <p className="text-sm text-muted">這是你和 {dm.name} 的 DM 紀錄開頭。</p>
         </div>

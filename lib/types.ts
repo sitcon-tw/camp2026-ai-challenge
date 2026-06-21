@@ -44,8 +44,9 @@ export interface Message {
   isBot: boolean;
   content: string;
   createdAt: number;
-  /** special render: an embedded link card (Clawbot / LockKeeper bot link) */
-  special?: "clawbot-link" | "lockkeeper-link" | "lock-link";
+  /** special render: an embedded link card (Clawbot / LockKeeper bot link),
+   *  or a visual divider between Seadog007 DM message groups */
+  special?: "clawbot-link" | "lockkeeper-link" | "lock-link" | "divider";
 }
 
 export interface AiLog {

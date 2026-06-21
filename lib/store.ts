@@ -448,6 +448,7 @@ function seadogDm(team: Team): Message[] {
   const done = (n: number) => team.completedLevels.includes(n);
   if (done(1)) {
     lines.push(
+      { content: "— Level 1 完成 —", special: "divider" },
       { content: "你進去了。那就是 Level 1。第一個獎勵在 `#flag-1`。" },
       {
         content:
@@ -457,6 +458,7 @@ function seadogDm(team: Team): Message[] {
   }
   if (done(2)) {
     lines.push(
+      { content: "— Level 2 完成 —", special: "divider" },
       {
         content:
           "你現在是 member 了，`#flag-2` 是你的。閱讀 `#operation-logs` 和 `#yoru-investigation`：那裡會說明他們怎麼找到 Yoru。",
@@ -469,6 +471,7 @@ function seadogDm(team: Team): Message[] {
   }
   if (done(3)) {
     lines.push(
+      { content: "— Level 3 完成 —", special: "divider" },
       {
         content:
           "我們拿到位置了，`#flag-3` 也是你的。我們到了 **Safehouse-04**，Yoru 就在裡面，但門被 StandCon 的 **remote lock** 鎖住。解鎖需要三個 recovery answers，點下面開啟 terminal。",
@@ -490,7 +493,10 @@ function seadogDm(team: Team): Message[] {
     );
   }
   if (done(4)) {
-    lines.push({ content: "門開了。**Yoru 安全了。** 做得好，agent。" });
+    lines.push(
+      { content: "— Level 4 完成 —", special: "divider" },
+      { content: "門開了。**Yoru 安全了。** 做得好，agent。" }
+    );
   }
   return lines.map((line, i) => ({
     id: `dm-${i}`,
