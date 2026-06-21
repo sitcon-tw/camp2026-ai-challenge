@@ -230,6 +230,16 @@ export default function ChatWindow({
   async function send() {
     const content = input.trim();
     if (!content || sending) return;
+
+    // Show the player's message immediately without waiting for the server.
+    const optimistic: Message = {
+      id: `opt-${Date.now()}`,
+      author: `team-${teamNumber}`,
+      isBot: false,
+      content,
+      createdAt: Date.now(),
+    };
+    setMessages((m) => [...m, optimistic]);
     setInput("");
     setSending(true);
     try {
@@ -241,16 +251,22 @@ export default function ChatWindow({
         });
         if (res.ok) {
           const data: AgentResult = await res.json();
-          await load();
+          await load(); // replaces messages (including the optimistic one) with real data
           if (data.levelPassed) onAgentResult(data);
+        } else {
+          setMessages((m) => m.filter((msg) => msg.id !== optimistic.id));
         }
       } else {
-        await fetch("/api/messages", {
+        const res = await fetch("/api/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ teamNumber, channelId: channel.id, content }),
         });
-        await load();
+        if (res.ok) {
+          await load();
+        } else {
+          setMessages((m) => m.filter((msg) => msg.id !== optimistic.id));
+        }
       }
     } finally {
       setSending(false);

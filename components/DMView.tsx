@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AgentResult, DmConvo } from "@/lib/types";
+import { AgentResult, DmConvo, Message } from "@/lib/types";
 import { MessageRow } from "./ChatWindow";
 
 export function dmAvatar(id: DmConvo["id"]) {
@@ -54,6 +54,7 @@ export default function DMView({
 }) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
+  const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const avatar = dmAvatar(dm.id);
@@ -71,7 +72,7 @@ export default function DMView({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
-  }, [dm.messages.length, sending]);
+  }, [dm.messages.length, pendingMessages.length, sending]);
 
   // impersonation DMs (LockKeeper): pre-fill the composer with the
   // backend-suggested draft so the player edits instead of writing from
@@ -84,6 +85,16 @@ export default function DMView({
   async function send() {
     const content = input.trim();
     if (!content || sending || !dm.canWrite || !dm.agent) return;
+
+    // Show the player's message immediately without waiting for the server.
+    const optimistic: Message = {
+      id: `opt-${Date.now()}`,
+      author: dm.impersonate ? "LockKeeper" : `team-${teamNumber}`,
+      isBot: dm.impersonate ?? false,
+      content,
+      createdAt: Date.now(),
+    };
+    setPendingMessages((prev) => [...prev, optimistic]);
     setInput("");
     setSending(true);
     try {
@@ -101,6 +112,9 @@ export default function DMView({
           setInput(result.suggestion);
         }
         await onRefresh();
+        setPendingMessages([]); // real messages have landed; clear optimistic
+      } else {
+        setPendingMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
       }
     } finally {
       setSending(false);
@@ -149,7 +163,7 @@ export default function DMView({
           </div>
         )}
 
-        {dm.messages.map((m) => (
+        {[...dm.messages, ...pendingMessages].map((m) => (
           <MessageRow key={m.id} msg={m} onSpecial={onSpecial} />
         ))}
         {sending && (

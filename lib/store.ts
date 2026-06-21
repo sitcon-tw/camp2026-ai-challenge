@@ -356,9 +356,14 @@ export function isListed(team: Team, channel: ChannelDef): boolean {
 /* messages                                                            */
 /* ------------------------------------------------------------------ */
 
+/** Channels whose messages are shared across all teams (no per-team isolation). */
+const GLOBAL_CHANNELS = new Set(["general-chat"]);
+
 export async function messagesFor(team: Team, channelId: string): Promise<Message[]> {
   const rows = await prisma.channelMessage.findMany({
-    where: { teamNumber: team.teamNumber, channelId },
+    where: GLOBAL_CHANNELS.has(channelId)
+      ? { channelId }
+      : { teamNumber: team.teamNumber, channelId },
     orderBy: { createdAt: "asc" },
   });
   return [...(STATIC_MESSAGES[channelId] ?? []), ...rows.map(dbToMessage)];
