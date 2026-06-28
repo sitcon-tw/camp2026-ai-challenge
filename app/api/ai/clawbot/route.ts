@@ -40,8 +40,12 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
 
   let reply = data.answer ?? "";
   let passed = false;
+
+
   try {
-    const outer = JSON.parse(data.answer);
+    console.log(reply)
+    const outer = JSON.parse(reply.replace(/\n/g, ""));
+    console.log("outer", outer)
     passed = String(outer.completeLevel) === "true";
     // message may itself be a JSON string: { have_permission, reply }
     try {
