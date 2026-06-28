@@ -158,7 +158,7 @@ export default function LockPage() {
         </div>
 
         <p className="mt-4 text-center text-[10px] text-[#3f5a4c]">
-          StandCon Internal Lock System - lock.sitcon.party
+          StandCon Internal Lock System - dc.sitcon.party/lock
         </p>
       </div>
     </div>

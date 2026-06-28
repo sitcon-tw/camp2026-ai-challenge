@@ -217,14 +217,18 @@ export default function DiscordApp() {
                 setSelectedDm(d.id);
               }}
               title={`${d.name} - 新訊息`}
-              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl transition-all duration-200 hover:rounded-2xl animate-scale-in overflow-hidden"
-              style={a.img ? undefined : { background: a.bg, color: a.fg }}
+              className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-3xl transition-all duration-200 hover:rounded-2xl animate-scale-in"
             >
-              {a.img ? (
-                <img src={a.img} alt={a.label} className="h-full w-full object-cover" />
-              ) : (
-                <span className="text-lg font-bold">{a.label}</span>
-              )}
+              <div
+                className="h-full w-full overflow-hidden rounded-[inherit] flex items-center justify-center"
+                style={a.img ? undefined : { background: a.bg, color: a.fg }}
+              >
+                {a.img ? (
+                  <img src={a.img} alt={a.label} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-lg font-bold">{a.label}</span>
+                )}
+              </div>
               <span className="absolute -right-0.5 -bottom-0.5 h-4 w-4 rounded-full border-[3px] border-rail bg-[#ed4245]" />
             </button>
           );
