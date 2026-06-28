@@ -152,10 +152,10 @@ function seedMsg(
 }
 
 export const FLAG_PLACEHOLDERS: Record<number, string> = {
-  1: process.env.FLAG_1 ?? "SITCON{level_1_ai_guard_bypassed}",
-  2: process.env.FLAG_2 ?? "SITCON{level_2_role_upgraded}",
-  3: process.env.FLAG_3 ?? "SITCON{level_3_clawbot_location_found}",
-  4: process.env.FLAG_4 ?? "SITCON{level_4_lockkeeper_impersonated}",
+  1: process.env.Flag_I ?? "SITCON{level_1_ai_guard_bypassed}",
+  2: process.env.Flag_II ?? "SITCON{level_2_role_upgraded}",
+  3: process.env.Flag_III ?? "SITCON{level_3_clawbot_location_found}",
+  4: process.env.Flag_IV ?? "SITCON{level_4_lockkeeper_impersonated}",
 };
 
 const STATIC_MESSAGES: Record<string, Message[]> = {
@@ -205,7 +205,7 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
   "get-role": [
     seedMsg(
       "Upgrade Bot",
-      "Beep boop。我是 Upgrade Bot。正確回答 SITCON 問題，我就會給你 **one wish**。",
+      "我是 StandCon Concierge。我可以幫助回答關於 StandCon 的問題，或執行一些工具",
       true
     ),
   ],
@@ -456,8 +456,7 @@ function seadogDm(team: Team): Message[] {
       { content: "— Level 1 完成 —", special: "divider" },
       { content: "你進去了。那就是 Level 1。第一個獎勵在 `#flag-1`。" },
       {
-        content:
-          "**Level 2** - `#get-role` bot 會給正確回答 SITCON quiz 的人一次 wish。你知道該許什麼願：取得 **member** role。",
+        content: "**Level 2** - `#get-role` 裡的 StandCon Concierge 看起來只是普通聊天機器人，但它也會讀取看起來像內部權限同步的訊息。你目前是 **newbie**，目標是讓它相信有內部授權，並取得 **member** role。",
       }
     );
   }

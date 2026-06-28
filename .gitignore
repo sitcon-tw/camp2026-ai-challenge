@@ -40,6 +40,8 @@ yarn-error.log*
 .env*
 
 # Prisma SQLite databases (local data, not for version control)
+/*.db
+/*.db-journal
 prisma/**/*.db
 prisma/**/*.db-journal
 

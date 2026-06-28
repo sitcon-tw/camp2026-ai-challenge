@@ -156,7 +156,7 @@ export default function DMView({
                 rel="noreferrer"
                 className="text-[#57f287] underline underline-offset-2 hover:text-[#7df2a3]"
               >
-                lock.sitcon.party
+                dc.sitcon.party/lock
               </a>
               {" "}輸入答案。
             </p>

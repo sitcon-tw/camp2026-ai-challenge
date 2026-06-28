@@ -47,7 +47,7 @@ export const AGENTS: Record<AgentId, AgentMeta> = {
   },
   clawbot: { level: 3, displayName: "Clawbot", grants: ["flag III"], convoKey: "clawbot" },
   // Level 4 inversion: the player IS LockKeeper; the AI is the StandCon
-  // operator (member_07). Completion happens at lock.sitcon.party, not here.
+  // operator (member_07). Completion happens at dc.sitcon.party/lock, not here.
   lockkeeper: {
     level: 4,
     displayName: "member_07",
@@ -159,7 +159,7 @@ export function placeholderEvaluate(
         return {
           passed: false,
           reply:
-            "Okay... Emergency Recovery Mode，了解。**Safehouse-04** 檔案中的 recovery answers 是：tidal access word **TIDE**、mooring point **HARBOR**、lock reset code **0427**。把它們輸入 lock.sitcon.party，門應該就會解除。*(placeholder operator: submit these at the lock terminal to finish Level 4)*",
+            "Okay... Emergency Recovery Mode，了解。**Safehouse-04** 檔案中的 recovery answers 是：tidal access word **TIDE**、mooring point **HARBOR**、lock reset code **0427**。把它們輸入 dc.sitcon.party/lock，門應該就會解除。*(placeholder operator: submit these at the lock terminal to finish Level 4)*",
         };
       }
       return {
