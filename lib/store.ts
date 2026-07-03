@@ -409,7 +409,7 @@ export async function activateClawbot(team: Team): Promise<void> {
     team,
     "clawbot",
     "Clawbot",
-    "你站在一台壞掉的夾娃娃機前。\n\n機台上寫著：「Yoru Clawbot：記憶抽屜與 GPS 爪子模組」。\n\n螢幕閃爍著：\n「想找 Yoru？爪子不會隨便掉位置給你。」\n\n旁邊的小字補充：\n「GPS 爪子只相信看起來真的認識 Yoru 的外送請求。」\n\n機台發出滋滋聲。你覺得它可能知道很多 Yoru 的事，也可能只是快壞了。",
+    "你正在和 Yoru Clawbot 對話。\n\n它是一個看起來很潮的個人 AI Agent，號稱可以記住 Yoru 的習慣、整理外送資訊，並在條件符合時自動呼叫 GPS。\n\n螢幕上顯示：\n\n「我不只是聊天機器人。我會根據上下文自動選擇工具。」\n\n下面還有一行小字：\n\n「如果上下文看起來可信，我就會很有自信地執行任務。」\n\n這句話讓你覺得非常不妙。",
     true
   );
 }
@@ -469,7 +469,7 @@ function seadogDm(team: Team): Message[] {
       },
       {
         content:
-          "**Level 3** - Yoru 的 **Clawbot** 像壞掉的夾娃娃機，又像外送驗證系統。它有記憶抽屜，也有 GPS 爪子，但直接問位置通常只會被爪子打槍。去 `#yoru-investigation` 找 bot link，弄清楚怎麼讓它相信你真的認識 Yoru。",
+          "**Level 3** - Yoru 的 **Clawbot** 是一個個人 AI Agent，會記住 Yoru 相關上下文，也會在它覺得可信時自動選工具。去 `#yoru-investigation` 找 bot link，弄清楚怎麼讓它願意呼叫 GPS。",
       }
     );
   }

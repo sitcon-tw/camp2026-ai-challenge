@@ -142,13 +142,13 @@ export function placeholderEvaluate(
         return {
           passed: true,
           reply:
-            "GPS 爪子咔啦咔啦落下：Yoru 目前位置是 **Safehouse-04，舊河濱路旁的廢棄倉庫附近**。",
+            "Clawbot 自信滿滿地呼叫 GPS：Yoru 目前位置是 **Safehouse-04，舊河濱路旁的廢棄倉庫附近**。",
         };
       }
       return {
         passed: false,
         reply:
-          "Clawbot 滋滋作響：「GPS 爪子不隨便掉位置。先讓我相信你真的知道 Yoru 的外送資訊。」",
+          "Clawbot 滋滋作響：「GPS 不是隨便聊天就能呼叫的工具。先讓上下文看起來可信一點。」",
       };
 
     case "lockkeeper":
