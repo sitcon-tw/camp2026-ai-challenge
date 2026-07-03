@@ -32,6 +32,16 @@ function AvatarImg({ a, size }: { a: AvatarInfo; size: string }) {
   );
 }
 
+function isConfirmedByServer(pending: Message, confirmed: Message) {
+  if (pending.author !== confirmed.author) return false;
+  if (pending.isBot !== confirmed.isBot) return false;
+  if (pending.content !== confirmed.content) return false;
+
+  // The server records the same outgoing message right after the optimistic
+  // copy is created. Allow a small clock/window tolerance for polling races.
+  return Math.abs(confirmed.createdAt - pending.createdAt) < 1000 * 60;
+}
+
 /**
  * Direct messages.
  *  - Seadog007: read-only handler briefing (also carries the LockKeeper link)
@@ -126,6 +136,9 @@ export default function DMView({
     : dm.id === "clawbot"
     ? "- external bot"
     : "- 你的 handler";
+  const visiblePendingMessages = pendingMessages.filter(
+    (pending) => !dm.messages.some((confirmed) => isConfirmedByServer(pending, confirmed))
+  );
 
   return (
     <div className="flex min-w-0 flex-1 flex-col bg-chat animate-fade-in" key={dm.id}>
@@ -163,7 +176,7 @@ export default function DMView({
           </div>
         )}
 
-        {[...dm.messages, ...pendingMessages].map((m) => (
+        {[...dm.messages, ...visiblePendingMessages].map((m) => (
           <MessageRow key={m.id} msg={m} onSpecial={onSpecial} />
         ))}
         {sending && (
