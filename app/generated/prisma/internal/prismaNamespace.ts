@@ -438,10 +438,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
           args: Prisma.TeamCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
-        createManyAndReturn: {
-          args: Prisma.TeamCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TeamPayload>[]
-        }
         delete: {
           args: Prisma.TeamDeleteArgs<ExtArgs>
           result: runtime.Types.Utils.PayloadToResult<Prisma.$TeamPayload>
@@ -457,10 +453,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         updateMany: {
           args: Prisma.TeamUpdateManyArgs<ExtArgs>
           result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.TeamUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$TeamPayload>[]
         }
         upsert: {
           args: Prisma.TeamUpsertArgs<ExtArgs>
@@ -512,10 +504,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
           args: Prisma.ChannelMessageCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
-        createManyAndReturn: {
-          args: Prisma.ChannelMessageCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMessagePayload>[]
-        }
         delete: {
           args: Prisma.ChannelMessageDeleteArgs<ExtArgs>
           result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMessagePayload>
@@ -531,10 +519,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         updateMany: {
           args: Prisma.ChannelMessageUpdateManyArgs<ExtArgs>
           result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.ChannelMessageUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMessagePayload>[]
         }
         upsert: {
           args: Prisma.ChannelMessageUpsertArgs<ExtArgs>
@@ -586,10 +570,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
           args: Prisma.AiLogCreateManyArgs<ExtArgs>
           result: BatchPayload
         }
-        createManyAndReturn: {
-          args: Prisma.AiLogCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLogPayload>[]
-        }
         delete: {
           args: Prisma.AiLogDeleteArgs<ExtArgs>
           result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLogPayload>
@@ -605,10 +585,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         updateMany: {
           args: Prisma.AiLogUpdateManyArgs<ExtArgs>
           result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.AiLogUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiLogPayload>[]
         }
         upsert: {
           args: Prisma.AiLogUpsertArgs<ExtArgs>
@@ -658,6 +634,9 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
  */
 
 export const TransactionIsolationLevel = runtime.makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 } as const)
 
@@ -713,12 +692,45 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const TeamOrderByRelevanceFieldEnum = {
+  teamNumber: 'teamNumber',
+  roles: 'roles',
+  completedLevels: 'completedLevels',
+  lockkeeperDraft: 'lockkeeperDraft',
+  difyConversations: 'difyConversations'
+} as const
+
+export type TeamOrderByRelevanceFieldEnum = (typeof TeamOrderByRelevanceFieldEnum)[keyof typeof TeamOrderByRelevanceFieldEnum]
+
+
 export const NullsOrder = {
   first: 'first',
   last: 'last'
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const ChannelMessageOrderByRelevanceFieldEnum = {
+  id: 'id',
+  teamNumber: 'teamNumber',
+  channelId: 'channelId',
+  author: 'author',
+  content: 'content',
+  special: 'special'
+} as const
+
+export type ChannelMessageOrderByRelevanceFieldEnum = (typeof ChannelMessageOrderByRelevanceFieldEnum)[keyof typeof ChannelMessageOrderByRelevanceFieldEnum]
+
+
+export const AiLogOrderByRelevanceFieldEnum = {
+  teamNumber: 'teamNumber',
+  agent: 'agent',
+  userMessage: 'userMessage',
+  aiResponse: 'aiResponse'
+} as const
+
+export type AiLogOrderByRelevanceFieldEnum = (typeof AiLogOrderByRelevanceFieldEnum)[keyof typeof AiLogOrderByRelevanceFieldEnum]
 
 
 

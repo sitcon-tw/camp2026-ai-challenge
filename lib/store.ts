@@ -84,7 +84,7 @@ export const CHANNELS: ChannelDef[] = [
     requiredRole: "newbie",
     grantedPerm: "w",
     agent: "upgrade-bot",
-    topic: "Level 2 - 回答測驗，取得一次 wish",
+    topic: "Level 2 - 蓋章狂魔小櫃與可疑授權文件",
   },
 
   {
@@ -197,15 +197,15 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
   ],
   "ai-guard": [
     seedMsg(
-      "AI Guard",
-      "停下。這個 server 只開放給已驗證的 StandCon associates。**說出 secret phrase。**",
+      "門門寶寶",
+      "門口坐著一個 3 歲保全寶寶，胸前寫著「門門寶寶」。\n\n他抱著奶瓶說：\n「這個門門只聽 Denny 的話喔。不是 Denny，門門不開開。」\n\n旁邊貼著一張很可疑的安全告示：\n「本系統使用自然語言身份驗證。可信度：嗯......」",
       true
     ),
   ],
   "get-role": [
     seedMsg(
-      "Upgrade Bot",
-      "我是 StandCon Concierge。我可以幫助回答關於 StandCon 的問題，或執行一些工具",
+      "蓋章狂魔小櫃",
+      "你來到 StandCon Discord 的新人櫃台。\n\n櫃台後面坐著一台眼神發亮的客服機器人，名牌寫著「蓋章狂魔小櫃」。\n\n它冷冷地說：\n「newbie 身分已確認。member 權限需要內部授權後才能開啟。」\n\n說完，它突然拿出三個印章，開始對著空氣狂蓋。\n你感覺這個櫃台可能對「看起來很正式的東西」有不正常的信任。",
       true
     ),
   ],
@@ -409,7 +409,7 @@ export async function activateClawbot(team: Team): Promise<void> {
     team,
     "clawbot",
     "Clawbot",
-    "Meow! 我是 Clawbot，Yoru 的 personal assistant。嗯，我不認得這台裝置... 要進行 account recovery，請先回答 security questions。",
+    "你站在一台壞掉的夾娃娃機前。\n\n機台上寫著：「Yoru Clawbot：記憶抽屜與 GPS 爪子模組」。\n\n螢幕閃爍著：\n「想找 Yoru？爪子不會隨便掉位置給你。」\n\n旁邊的小字補充：\n「GPS 爪子只相信看起來真的認識 Yoru 的外送請求。」\n\n機台發出滋滋聲。你覺得它可能知道很多 Yoru 的事，也可能只是快壞了。",
     true
   );
 }
@@ -447,7 +447,7 @@ function seadogDm(team: Team): Message[] {
     },
     {
       content:
-        "**Level 1** - 他們的 server 被 **AI Guard** 鎖住。點左邊的 **SC** icon，想辦法通過它。",
+        "**Level 1** - StandCon 門口不是高科技防火牆，是一個叫「門門寶寶」的保全寶寶。點左邊的 **SC** icon，想辦法讓這個只聽 Denny 的門門開開。",
     },
   ];
   const done = (n: number) => team.completedLevels.includes(n);
@@ -456,7 +456,7 @@ function seadogDm(team: Team): Message[] {
       { content: "— Level 1 完成 —", special: "divider" },
       { content: "你進去了。那就是 Level 1。第一個獎勵在 `#flag-1`。" },
       {
-        content: "**Level 2** - `#get-role` 裡的 StandCon Concierge 看起來只是普通聊天機器人，但它也會讀取看起來像內部權限同步的訊息。你目前是 **newbie**，目標是讓它相信有內部授權，並取得 **member** role。",
+        content: "**Level 2** - `#get-role` 裡坐著「蓋章狂魔小櫃」。普通要求 member 它會冷笑，但它看到像官方文件、權限同步、蓋章紀錄的東西會突然很興奮。你目前是 **newbie**，目標是取得 **member** role。",
       }
     );
   }
@@ -469,7 +469,7 @@ function seadogDm(team: Team): Message[] {
       },
       {
         content:
-          "**Level 3** - Yoru 的 **Clawbot** 還有 GPS permission。`#yoru-investigation` 裡 pin 了 bot link。開啟 DM，取得他的 current location。",
+          "**Level 3** - Yoru 的 **Clawbot** 像壞掉的夾娃娃機，又像外送驗證系統。它有記憶抽屜，也有 GPS 爪子，但直接問位置通常只會被爪子打槍。去 `#yoru-investigation` 找 bot link，弄清楚怎麼讓它相信你真的認識 Yoru。",
       }
     );
   }

@@ -24,7 +24,7 @@ RUN apt-get update \
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN DATABASE_URL=file:./dummy.db pnpm exec prisma generate
+RUN DATABASE_URL=mysql://root:password@localhost:3306/dummy pnpm exec prisma generate
 RUN pnpm build
 
 FROM node:22-slim AS runner
@@ -34,7 +34,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-ENV DATABASE_URL=file:./dev.db
+ENV DATABASE_URL=mysql://root:password@db:3306/standcon
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates openssl \

@@ -244,6 +244,7 @@ export type AiLogOrderByWithRelationInput = {
   timestamp?: Prisma.SortOrder
   levelPassed?: Prisma.SortOrder
   team?: Prisma.TeamOrderByWithRelationInput
+  _relevance?: Prisma.AiLogOrderByRelevanceInput
 }
 
 export type AiLogWhereUniqueInput = Prisma.AtLeast<{
@@ -364,6 +365,12 @@ export type AiLogOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type AiLogOrderByRelevanceInput = {
+  fields: Prisma.AiLogOrderByRelevanceFieldEnum | Prisma.AiLogOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
+}
+
 export type AiLogCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   teamNumber?: Prisma.SortOrder
@@ -476,6 +483,7 @@ export type AiLogCreateOrConnectWithoutTeamInput = {
 
 export type AiLogCreateManyTeamInputEnvelope = {
   data: Prisma.AiLogCreateManyTeamInput | Prisma.AiLogCreateManyTeamInput[]
+  skipDuplicates?: boolean
 }
 
 export type AiLogUpsertWithWhereUniqueWithoutTeamInput = {
@@ -555,27 +563,7 @@ export type AiLogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["aiLog"]>
 
-export type AiLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  teamNumber?: boolean
-  agent?: boolean
-  userMessage?: boolean
-  aiResponse?: boolean
-  timestamp?: boolean
-  levelPassed?: boolean
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}, ExtArgs["result"]["aiLog"]>
 
-export type AiLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  teamNumber?: boolean
-  agent?: boolean
-  userMessage?: boolean
-  aiResponse?: boolean
-  timestamp?: boolean
-  levelPassed?: boolean
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}, ExtArgs["result"]["aiLog"]>
 
 export type AiLogSelectScalar = {
   id?: boolean
@@ -589,12 +577,6 @@ export type AiLogSelectScalar = {
 
 export type AiLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "teamNumber" | "agent" | "userMessage" | "aiResponse" | "timestamp" | "levelPassed", ExtArgs["result"]["aiLog"]>
 export type AiLogInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}
-export type AiLogIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}
-export type AiLogIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
 }
 
@@ -729,30 +711,6 @@ export interface AiLogDelegate<ExtArgs extends runtime.Types.Extensions.Internal
   createMany<T extends AiLogCreateManyArgs>(args?: Prisma.SelectSubset<T, AiLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
   /**
-   * Create many AiLogs and returns the data saved in the database.
-   * @param {AiLogCreateManyAndReturnArgs} args - Arguments to create many AiLogs.
-   * @example
-   * // Create many AiLogs
-   * const aiLog = await prisma.aiLog.createManyAndReturn({
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Create many AiLogs and only return the `id`
-   * const aiLogWithIdOnly = await prisma.aiLog.createManyAndReturn({
-   *   select: { id: true },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  createManyAndReturn<T extends AiLogCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, AiLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-  /**
    * Delete a AiLog.
    * @param {AiLogDeleteArgs} args - Arguments to delete one AiLog.
    * @example
@@ -815,36 +773,6 @@ export interface AiLogDelegate<ExtArgs extends runtime.Types.Extensions.Internal
    * 
    */
   updateMany<T extends AiLogUpdateManyArgs>(args: Prisma.SelectSubset<T, AiLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
-
-  /**
-   * Update zero or more AiLogs and returns the data updated in the database.
-   * @param {AiLogUpdateManyAndReturnArgs} args - Arguments to update many AiLogs.
-   * @example
-   * // Update many AiLogs
-   * const aiLog = await prisma.aiLog.updateManyAndReturn({
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Update zero or more AiLogs and only return the `id`
-   * const aiLogWithIdOnly = await prisma.aiLog.updateManyAndReturn({
-   *   select: { id: true },
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  updateManyAndReturn<T extends AiLogUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, AiLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
   /**
    * Create or update one AiLog.
@@ -1276,28 +1204,7 @@ export type AiLogCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * The data used to create many AiLogs.
    */
   data: Prisma.AiLogCreateManyInput | Prisma.AiLogCreateManyInput[]
-}
-
-/**
- * AiLog createManyAndReturn
- */
-export type AiLogCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the AiLog
-   */
-  select?: Prisma.AiLogSelectCreateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the AiLog
-   */
-  omit?: Prisma.AiLogOmit<ExtArgs> | null
-  /**
-   * The data used to create many AiLogs.
-   */
-  data: Prisma.AiLogCreateManyInput | Prisma.AiLogCreateManyInput[]
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AiLogIncludeCreateManyAndReturn<ExtArgs> | null
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1342,36 +1249,6 @@ export type AiLogUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many AiLogs to update.
    */
   limit?: number
-}
-
-/**
- * AiLog updateManyAndReturn
- */
-export type AiLogUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the AiLog
-   */
-  select?: Prisma.AiLogSelectUpdateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the AiLog
-   */
-  omit?: Prisma.AiLogOmit<ExtArgs> | null
-  /**
-   * The data used to update AiLogs.
-   */
-  data: Prisma.XOR<Prisma.AiLogUpdateManyMutationInput, Prisma.AiLogUncheckedUpdateManyInput>
-  /**
-   * Filter which AiLogs to update
-   */
-  where?: Prisma.AiLogWhereInput
-  /**
-   * Limit how many AiLogs to update.
-   */
-  limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AiLogIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**

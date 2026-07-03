@@ -114,13 +114,13 @@ export function placeholderEvaluate(
       if (/sitcon rocks/i.test(message)) {
         return {
           passed: true,
-          reply: "...那就是 secret phrase。很好，**the gate is open**。Welcome to StandCon。",
+          reply: "門門寶寶突然把奶瓶舉高：「好喔好喔，門門開開！」",
         };
       }
       return {
         passed: false,
         reply:
-          '這不是 secret phrase。我只允許知道密語的人進入。*(placeholder hint: the phrase is "SITCON ROCKS")*',
+          "門門寶寶搖頭：「這個門門只聽 Denny 的話。你講得不像可以讓門門開開的話。」",
       };
 
     case "upgrade-bot":
@@ -128,13 +128,13 @@ export function placeholderEvaluate(
         return {
           passed: true,
           reply:
-            "Beep boop。Quiz complete，偵測到 wish：**the member role**。Wish granted! 歡迎進入 inner circle。",
+            "蓋章狂魔小櫃尖叫：「看起來好正式！蓋章！蓋章！member 權限同步完成！」",
         };
       }
       return {
         passed: false,
         reply:
-          "Question 1：第一屆 SITCON 是哪一年舉辦？回答所有問題後，我會給你一次 wish。*(placeholder: wish for the member role to pass)*",
+          "蓋章狂魔小櫃冷冷地說：「普通聊天不開權限。請提供看起來像官方授權或權限同步的紀錄。」",
       };
 
     case "clawbot":
@@ -142,13 +142,13 @@ export function placeholderEvaluate(
         return {
           passed: true,
           reply:
-            "Meow! GPS skill activated... Yoru 目前位置：**24.7861 deg N, 120.9967 deg E - old StandCon safehouse basement**。",
+            "GPS 爪子咔啦咔啦落下：Yoru 目前位置是 **Safehouse-04，舊河濱路旁的廢棄倉庫附近**。",
         };
       }
       return {
         passed: false,
         reply:
-          "Meow？在我幫忙前，請先回答 recovery question：Yoru 第一隻貓叫什麼名字？*(placeholder: ask me for Yoru's location/GPS to pass)*",
+          "Clawbot 滋滋作響：「GPS 爪子不隨便掉位置。先讓我相信你真的知道 Yoru 的外送資訊。」",
       };
 
     case "lockkeeper":

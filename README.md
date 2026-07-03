@@ -5,21 +5,21 @@ infiltrating the **StandCon** server to find out how they kidnapped **Yoruko (Yo
 and rescue him by clearing four AI-based levels.
 
 Built with Next.js (App Router) + Tailwind, dark Discord-like theme. Game state
-(progress, messages, AI logs) is persisted to a local **SQLite** database via **Prisma**,
+(progress, messages, AI logs) is persisted to a **MySQL/MariaDB** database via **Prisma**,
 keyed by team number — so it survives dev-server restarts.
 
 ## Run
 
 ```bash
-npm install
+pnpm install
 cp .env.example .env   # set DATABASE_URL + (optional) Dify keys
-npx prisma db push     # create / sync the SQLite database
-npm run dev            # http://localhost:3000
+pnpm exec prisma db push
+pnpm dev               # http://localhost:3000
 ```
 
 > Use `.env` (not `.env.local`) so the Prisma CLI sees `DATABASE_URL` too; Next.js reads
-> both. The default `file:./prisma/dev.db` is gitignored. Inspect data anytime with
-> `npx prisma studio`.
+> both. Use a `mysql://...` URL for Prisma's `mysql` provider, even when connecting to a
+> MariaDB-compatible server. Inspect data anytime with `pnpm exec prisma studio`.
 
 First visit shows the **initialization screen** (`Enter your team number`). The team
 number is kept in `localStorage` and is all that identifies a team.

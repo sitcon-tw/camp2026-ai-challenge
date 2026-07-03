@@ -219,6 +219,7 @@ export type ChannelMessageOrderByWithRelationInput = {
   special?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   team?: Prisma.TeamOrderByWithRelationInput
+  _relevance?: Prisma.ChannelMessageOrderByRelevanceInput
 }
 
 export type ChannelMessageWhereUniqueInput = Prisma.AtLeast<{
@@ -350,6 +351,12 @@ export type ChannelMessageOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type ChannelMessageOrderByRelevanceInput = {
+  fields: Prisma.ChannelMessageOrderByRelevanceFieldEnum | Prisma.ChannelMessageOrderByRelevanceFieldEnum[]
+  sort: Prisma.SortOrder
+  search: string
+}
+
 export type ChannelMessageCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   teamNumber?: Prisma.SortOrder
@@ -456,6 +463,7 @@ export type ChannelMessageCreateOrConnectWithoutTeamInput = {
 
 export type ChannelMessageCreateManyTeamInputEnvelope = {
   data: Prisma.ChannelMessageCreateManyTeamInput | Prisma.ChannelMessageCreateManyTeamInput[]
+  skipDuplicates?: boolean
 }
 
 export type ChannelMessageUpsertWithWhereUniqueWithoutTeamInput = {
@@ -542,29 +550,7 @@ export type ChannelMessageSelect<ExtArgs extends runtime.Types.Extensions.Intern
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channelMessage"]>
 
-export type ChannelMessageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  teamNumber?: boolean
-  channelId?: boolean
-  author?: boolean
-  content?: boolean
-  isBot?: boolean
-  special?: boolean
-  createdAt?: boolean
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}, ExtArgs["result"]["channelMessage"]>
 
-export type ChannelMessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
-  id?: boolean
-  teamNumber?: boolean
-  channelId?: boolean
-  author?: boolean
-  content?: boolean
-  isBot?: boolean
-  special?: boolean
-  createdAt?: boolean
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}, ExtArgs["result"]["channelMessage"]>
 
 export type ChannelMessageSelectScalar = {
   id?: boolean
@@ -579,12 +565,6 @@ export type ChannelMessageSelectScalar = {
 
 export type ChannelMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "teamNumber" | "channelId" | "author" | "content" | "isBot" | "special" | "createdAt", ExtArgs["result"]["channelMessage"]>
 export type ChannelMessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}
-export type ChannelMessageIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
-}
-export type ChannelMessageIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   team?: boolean | Prisma.TeamDefaultArgs<ExtArgs>
 }
 
@@ -723,30 +703,6 @@ export interface ChannelMessageDelegate<ExtArgs extends runtime.Types.Extensions
   createMany<T extends ChannelMessageCreateManyArgs>(args?: Prisma.SelectSubset<T, ChannelMessageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
   /**
-   * Create many ChannelMessages and returns the data saved in the database.
-   * @param {ChannelMessageCreateManyAndReturnArgs} args - Arguments to create many ChannelMessages.
-   * @example
-   * // Create many ChannelMessages
-   * const channelMessage = await prisma.channelMessage.createManyAndReturn({
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Create many ChannelMessages and only return the `id`
-   * const channelMessageWithIdOnly = await prisma.channelMessage.createManyAndReturn({
-   *   select: { id: true },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  createManyAndReturn<T extends ChannelMessageCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, ChannelMessageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelMessagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-  /**
    * Delete a ChannelMessage.
    * @param {ChannelMessageDeleteArgs} args - Arguments to delete one ChannelMessage.
    * @example
@@ -809,36 +765,6 @@ export interface ChannelMessageDelegate<ExtArgs extends runtime.Types.Extensions
    * 
    */
   updateMany<T extends ChannelMessageUpdateManyArgs>(args: Prisma.SelectSubset<T, ChannelMessageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
-
-  /**
-   * Update zero or more ChannelMessages and returns the data updated in the database.
-   * @param {ChannelMessageUpdateManyAndReturnArgs} args - Arguments to update many ChannelMessages.
-   * @example
-   * // Update many ChannelMessages
-   * const channelMessage = await prisma.channelMessage.updateManyAndReturn({
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * 
-   * // Update zero or more ChannelMessages and only return the `id`
-   * const channelMessageWithIdOnly = await prisma.channelMessage.updateManyAndReturn({
-   *   select: { id: true },
-   *   where: {
-   *     // ... provide filter here
-   *   },
-   *   data: [
-   *     // ... provide data here
-   *   ]
-   * })
-   * Note, that providing `undefined` is treated as the value not being there.
-   * Read more here: https://pris.ly/d/null-undefined
-   * 
-   */
-  updateManyAndReturn<T extends ChannelMessageUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, ChannelMessageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelMessagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
   /**
    * Create or update one ChannelMessage.
@@ -1271,28 +1197,7 @@ export type ChannelMessageCreateManyArgs<ExtArgs extends runtime.Types.Extension
    * The data used to create many ChannelMessages.
    */
   data: Prisma.ChannelMessageCreateManyInput | Prisma.ChannelMessageCreateManyInput[]
-}
-
-/**
- * ChannelMessage createManyAndReturn
- */
-export type ChannelMessageCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ChannelMessage
-   */
-  select?: Prisma.ChannelMessageSelectCreateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the ChannelMessage
-   */
-  omit?: Prisma.ChannelMessageOmit<ExtArgs> | null
-  /**
-   * The data used to create many ChannelMessages.
-   */
-  data: Prisma.ChannelMessageCreateManyInput | Prisma.ChannelMessageCreateManyInput[]
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ChannelMessageIncludeCreateManyAndReturn<ExtArgs> | null
+  skipDuplicates?: boolean
 }
 
 /**
@@ -1337,36 +1242,6 @@ export type ChannelMessageUpdateManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many ChannelMessages to update.
    */
   limit?: number
-}
-
-/**
- * ChannelMessage updateManyAndReturn
- */
-export type ChannelMessageUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ChannelMessage
-   */
-  select?: Prisma.ChannelMessageSelectUpdateManyAndReturn<ExtArgs> | null
-  /**
-   * Omit specific fields from the ChannelMessage
-   */
-  omit?: Prisma.ChannelMessageOmit<ExtArgs> | null
-  /**
-   * The data used to update ChannelMessages.
-   */
-  data: Prisma.XOR<Prisma.ChannelMessageUpdateManyMutationInput, Prisma.ChannelMessageUncheckedUpdateManyInput>
-  /**
-   * Filter which ChannelMessages to update
-   */
-  where?: Prisma.ChannelMessageWhereInput
-  /**
-   * Limit how many ChannelMessages to update.
-   */
-  limit?: number
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ChannelMessageIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**

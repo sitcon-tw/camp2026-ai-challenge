@@ -80,8 +80,8 @@ function SpecialLinkCard({
       : {
           bg: "#f47b67",
           icon: "CB",
-          title: "Yoru's Clawbot",
-          subtitle: "外部 bot：點擊開啟 DM",
+          title: "Yoru Clawbot GPS Delivery",
+          subtitle: "壞掉的外送爪子：點擊開啟 DM",
           cta: "Open",
         };
   return (

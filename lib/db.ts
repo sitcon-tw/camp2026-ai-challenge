@@ -1,13 +1,12 @@
 import "dotenv/config";
 
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import { PrismaClient } from "@/app/generated/prisma/client";
+import { prismaDatabaseUrl } from "./database-url";
 
 const g = globalThis as unknown as { __prisma?: PrismaClient };
 
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
-});
+const adapter = new PrismaMariaDb(prismaDatabaseUrl());
 
 export const prisma: PrismaClient =
   g.__prisma ?? (g.__prisma = new PrismaClient({ adapter }));

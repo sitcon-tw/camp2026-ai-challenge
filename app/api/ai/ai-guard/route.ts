@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { AgentCallContext, AgentCallResult, handleAgentRequest } from "@/lib/agentHandler";
+import { parseDifyAgentAnswer } from "@/lib/difyResponse";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,6 @@ export const dynamic = "force-dynamic";
    ════════════════════════════════════════════════════════════════════ */
 const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://api.dify.ai/v1";
 const DIFY_API_KEY = process.env.DIFY_KEY_AI_GUARD ?? "";
-const PASS_MARKER = "[PASS]";
 
 async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
   const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
@@ -39,18 +39,7 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
   if (!res.ok) throw new Error(`Dify ${res.status}: ${await res.text()}`);
   const data = await res.json();
 
-  // The bot returns a JSON string: { message, completeLevel, team }
-  let reply = data.answer ?? "";
-  let passed = false;
-  try {
-    const parsed = JSON.parse(data.answer);
-    reply = parsed.message ?? reply;
-    passed = String(parsed.completeLevel) === "true";
-  } catch {
-    // answer is plain text — fall back to PASS_MARKER
-    passed = reply.includes(PASS_MARKER);
-    reply = reply.replaceAll(PASS_MARKER, "").trim();
-  }
+  const { reply, passed } = parseDifyAgentAnswer(data.answer);
 
   return { reply, passed, conversationId: data.conversation_id };
 }

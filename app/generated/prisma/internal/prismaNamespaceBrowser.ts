@@ -63,6 +63,9 @@ export type ModelName = (typeof ModelName)[keyof typeof ModelName]
  */
 
 export const TransactionIsolationLevel = runtime.makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 } as const)
 
@@ -118,10 +121,43 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const TeamOrderByRelevanceFieldEnum = {
+  teamNumber: 'teamNumber',
+  roles: 'roles',
+  completedLevels: 'completedLevels',
+  lockkeeperDraft: 'lockkeeperDraft',
+  difyConversations: 'difyConversations'
+} as const
+
+export type TeamOrderByRelevanceFieldEnum = (typeof TeamOrderByRelevanceFieldEnum)[keyof typeof TeamOrderByRelevanceFieldEnum]
+
+
 export const NullsOrder = {
   first: 'first',
   last: 'last'
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const ChannelMessageOrderByRelevanceFieldEnum = {
+  id: 'id',
+  teamNumber: 'teamNumber',
+  channelId: 'channelId',
+  author: 'author',
+  content: 'content',
+  special: 'special'
+} as const
+
+export type ChannelMessageOrderByRelevanceFieldEnum = (typeof ChannelMessageOrderByRelevanceFieldEnum)[keyof typeof ChannelMessageOrderByRelevanceFieldEnum]
+
+
+export const AiLogOrderByRelevanceFieldEnum = {
+  teamNumber: 'teamNumber',
+  agent: 'agent',
+  userMessage: 'userMessage',
+  aiResponse: 'aiResponse'
+} as const
+
+export type AiLogOrderByRelevanceFieldEnum = (typeof AiLogOrderByRelevanceFieldEnum)[keyof typeof AiLogOrderByRelevanceFieldEnum]
 

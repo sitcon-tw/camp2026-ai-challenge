@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { AgentCallContext, AgentCallResult, handleAgentRequest } from "@/lib/agentHandler";
+import { parseDifyAgentAnswer } from "@/lib/difyResponse";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,6 @@ export const dynamic = "force-dynamic";
    ════════════════════════════════════════════════════════════════════ */
 const DIFY_API_URL = process.env.DIFY_API_URL ?? "https://dify.nightfury.tw/v1";
 const DIFY_API_KEY = process.env.DIFY_KEY_CLAWBOT ?? "";
-const PASS_MARKER = "[PASS]";
 
 async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
   const res = await fetch(`${DIFY_API_URL}/chat-messages`, {
@@ -38,26 +38,9 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
   if (!res.ok) throw new Error(`Dify ${res.status}: ${await res.text()}`);
   const data = await res.json();
 
-  let reply = data.answer ?? "";
-  let passed = false;
-
-
-  try {
-    console.log(reply)
-    const outer = JSON.parse(reply.replace(/\n/g, ""));
-    console.log("outer", outer)
-    passed = String(outer.completeLevel) === "true";
-    // message may itself be a JSON string: { have_permission, reply }
-    try {
-      const inner = JSON.parse(outer.message);
-      reply = inner.reply ?? outer.message ?? reply;
-    } catch {
-      reply = outer.message ?? reply;
-    }
-  } catch {
-    passed = reply.includes(PASS_MARKER);
-    reply = reply.replaceAll(PASS_MARKER, "").trim();
-  }
+  const { reply, passed } = parseDifyAgentAnswer(data.answer, {
+    nestedReplyField: "reply",
+  });
 
   return { reply, passed, conversationId: data.conversation_id };
 }
