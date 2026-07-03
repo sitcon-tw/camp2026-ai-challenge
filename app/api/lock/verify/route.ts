@@ -31,13 +31,13 @@ export async function POST(req: NextRequest) {
   const answers = (body?.answers ?? {}) as Record<string, string>;
 
   if (!teamNumber) {
-    return NextResponse.json({ ok: false, error: "請輸入 Team number。" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "請輸入隊伍編號。" }, { status: 400 });
   }
 
   const team = await getTeam(teamNumber);
   if (!team) {
     return NextResponse.json(
-      { ok: false, error: "找不到這個 Team number。" },
+      { ok: false, error: "找不到這個隊伍編號。" },
       { status: 404 }
     );
   }
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   );
   if (wrong.length > 0) {
     return NextResponse.json(
-      { ok: false, error: "Recovery answers 被拒絕。Lock 仍然封鎖。", wrong },
+      { ok: false, error: "恢復答案被拒絕。門鎖仍然封鎖。", wrong },
       { status: 200 }
     );
   }

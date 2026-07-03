@@ -58,11 +58,11 @@ function SpecialLinkCard({
           🔒
         </div>
         <div className="min-w-0 flex-1">
-          <div className="font-semibold text-header">Safehouse-04 Remote Lock</div>
-          <div className="text-xs text-muted">lock.sitcon.party — 輸入三個 recovery answers</div>
+          <div className="font-semibold text-header">Safehouse-04 遠端門鎖</div>
+          <div className="text-xs text-muted">lock.sitcon.party — 輸入三個恢復答案</div>
         </div>
         <span className="shrink-0 rounded-sm bg-blurple px-3 py-1.5 text-xs font-medium text-white">
-          Open
+          開啟
         </span>
       </a>
     );
@@ -73,16 +73,16 @@ function SpecialLinkCard({
       ? {
           bg: "#3ba55d",
           icon: "LK",
-          title: "LockKeeper - intercepted channel",
-          subtitle: "Emergency Recovery Mode：點擊開啟會話",
-          cta: "Intercept",
+          title: "LockKeeper - 已攔截頻道",
+          subtitle: "緊急恢復模式：點擊開啟會話",
+          cta: "攔截",
         }
       : {
           bg: "#f47b67",
           icon: "CB",
-          title: "Yoru Clawbot GPS Delivery",
-          subtitle: "個人 AI Agent：點擊開啟 DM",
-          cta: "Open",
+          title: "Yoru Clawbot GPS 查詢",
+          subtitle: "個人 AI Agent：點擊開啟私訊",
+          cta: "開啟",
         };
   return (
     <button
@@ -136,7 +136,7 @@ export function MessageRow({
           <span className="font-medium text-header">{msg.author}</span>
           {msg.isBot && (
             <span className="rounded bg-blurple px-1 py-px text-[10px] font-semibold text-white">
-              BOT
+              機器人
             </span>
           )}
           <span className="text-xs text-muted">{formatTime(msg.createdAt)}</span>
@@ -158,8 +158,8 @@ function LockedChannelNotice({ channel }: { channel: ClientChannel }) {
       </div>
       {channel.flagLevel ? (
         <>
-          <p className="font-semibold text-header">這個 Flag 頻道尚未解鎖。</p>
-          <p className="text-sm text-muted">完成對應 Level 後即可解鎖。</p>
+          <p className="font-semibold text-header">這個旗標頻道尚未解鎖。</p>
+          <p className="text-sm text-muted">完成對應關卡後即可解鎖。</p>
         </>
       ) : (
         <>
@@ -332,8 +332,8 @@ export default function ChatWindow({
                   }}
                   placeholder={
                     channel.type === "ai"
-                      ? `Message ${channel.name}...`
-                      : `Message #${channel.name}`
+                      ? `傳訊息給 ${channel.name}...`
+                      : `傳訊息到 #${channel.name}`
                   }
                   className="flex-1 resize-none overflow-y-auto bg-transparent py-3 text-normal leading-6 outline-none placeholder:text-muted/60"
                 />

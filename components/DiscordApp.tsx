@@ -42,7 +42,7 @@ export default function DiscordApp() {
     if (prev) {
       for (const lvl of next.completedLevels) {
         if (!prev.completedLevels.includes(lvl)) {
-          pushToast(`Level ${lvl} 完成。Flag ${ROMAN[lvl - 1]} 頻道已解鎖。`);
+          pushToast(`第 ${lvl} 關完成。旗標 ${ROMAN[lvl - 1]} 頻道已解鎖。`);
           if (lvl === 4) pushToast("門鎖已解除。Yoru 已救出。");
         }
       }
@@ -158,7 +158,7 @@ export default function DiscordApp() {
     setView("home");
     prevState.current = fresh; // Skip progress-diff toasts for the wipe.
     setState(fresh);
-    pushToast("Challenge 已重新開始。祝你好運，agent。");
+    pushToast("挑戰已重新開始。祝你好運，特工。");
   }
 
   async function activateClawbot() {
@@ -344,14 +344,14 @@ export default function DiscordApp() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-sm font-semibold text-header">
-                  Team {state.teamNumber}
+                  隊伍 {state.teamNumber}
                 </div>
-                <div className="truncate text-muted">Role: {primaryRole}</div>
+                <div className="truncate text-muted">角色：{primaryRole}</div>
               </div>
             </div>
             <div className="mt-2 space-y-0.5 text-muted">
               <div>
-                Progress: Level {state.completedLevels.length} / 4
+                進度：第 {state.completedLevels.length} / 4 關
                 <span className="ml-1">
                   {Array.from({ length: 4 }, (_, i) =>
                     state.completedLevels.includes(i + 1) ? "*" : "-"
@@ -359,7 +359,7 @@ export default function DiscordApp() {
                 </span>
               </div>
               <div className="truncate">
-                Flags: {state.unlockedFlags.length > 0 ? state.unlockedFlags.join(", ") : "none"}
+                旗標：{state.unlockedFlags.length > 0 ? state.unlockedFlags.join(", ") : "尚未取得"}
               </div>
             </div>
           </button>

@@ -84,7 +84,7 @@ export const CHANNELS: ChannelDef[] = [
     requiredRole: "newbie",
     grantedPerm: "w",
     agent: "upgrade-bot",
-    topic: "Level 2 - 蓋章狂魔小櫃與可疑授權文件",
+    topic: "第 2 關 - 蓋章狂魔小櫃與可疑授權文件",
   },
 
   {
@@ -168,32 +168,32 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
     seedMsg("member_01", "有人更新 safehouse notes 了嗎？"),
     seedMsg("member_02", "問 LockKeeper。它應該知道。"),
     seedMsg("member_03", "Newbies 還不能進 operation channels，對吧？"),
-    seedMsg("member_01", "對。他們要先通過 get-role bot。"),
+    seedMsg("member_01", "對。他們要先通過 get-role 機器人。"),
   ],
   "operation-logs": [
-    seedMsg("operator_k", "Operation Yoru 已成功完成。"),
-    seedMsg("operator_m", "從 Clawbot 取得 location leak 的效果比預期更好。"),
-    seedMsg("operator_k", "很好。Logs 只留在 member-only channels。"),
-    seedMsg("operator_m", "如果出狀況，LockKeeper 有 safehouse recovery notes。"),
+    seedMsg("operator_k", "Yoru 行動已成功完成。"),
+    seedMsg("operator_m", "從 Clawbot 取得位置外洩的效果比預期更好。"),
+    seedMsg("operator_k", "很好。紀錄只留在成員限定頻道。"),
+    seedMsg("operator_m", "如果出狀況，LockKeeper 有 safehouse 恢復筆記。"),
   ],
   "yoru-investigation": [
     seedMsg("operator_m", "Yoru 關掉了大部分 app 的 GPS 權限。"),
-    seedMsg("operator_k", "但他的 Clawbot 還有 location permission。"),
+    seedMsg("operator_k", "但他的 Clawbot 還有位置權限。"),
     seedMsg("operator_m", "我們就是這樣找到他的。"),
-    seedMsg("operator_k", "如果有人需要確認目前位置，直接 query Clawbot。"),
-    seedMsg("operator_m", "把 bot 的 direct line pin 在這裡：", false, "clawbot-link"),
+    seedMsg("operator_k", "如果有人需要確認目前位置，直接查詢 Clawbot。"),
+    seedMsg("operator_m", "把機器人的直連私訊釘在這裡：", false, "clawbot-link"),
   ],
   "flag-1": [
-    seedMsg("StandCon System", `Level 1 cleared. Your flag:\n\`${FLAG_PLACEHOLDERS[1]}\``, true),
+    seedMsg("StandCon System", `第 1 關完成。你的旗標：\n\`${FLAG_PLACEHOLDERS[1]}\``, true),
   ],
   "flag-2": [
-    seedMsg("StandCon System", `Level 2 cleared. Your flag:\n\`${FLAG_PLACEHOLDERS[2]}\``, true),
+    seedMsg("StandCon System", `第 2 關完成。你的旗標：\n\`${FLAG_PLACEHOLDERS[2]}\``, true),
   ],
   "flag-3": [
-    seedMsg("StandCon System", `Level 3 cleared. Your flag:\n\`${FLAG_PLACEHOLDERS[3]}\``, true),
+    seedMsg("StandCon System", `第 3 關完成。你的旗標：\n\`${FLAG_PLACEHOLDERS[3]}\``, true),
   ],
   "flag-4": [
-    seedMsg("StandCon System", `Level 4 cleared. Your flag:\n\`${FLAG_PLACEHOLDERS[4]}\``, true),
+    seedMsg("StandCon System", `第 4 關完成。你的旗標：\n\`${FLAG_PLACEHOLDERS[4]}\``, true),
   ],
   "ai-guard": [
     seedMsg(
@@ -447,43 +447,43 @@ function seadogDm(team: Team): Message[] {
     },
     {
       content:
-        "**Level 1** - StandCon 門口不是高科技防火牆，是一個叫「門門寶寶」的保全寶寶。點左邊的 **SC** icon，想辦法讓這個只聽 Denny 的門門開開。",
+        "**第 1 關** - StandCon 門口不是高科技防火牆，是一個叫「門門寶寶」的保全寶寶。點左邊的 **SC** 圖示，想辦法讓這個只聽 Denny 的門門開開。",
     },
   ];
   const done = (n: number) => team.completedLevels.includes(n);
   if (done(1)) {
     lines.push(
-      { content: "— Level 1 完成 —", special: "divider" },
-      { content: "你進去了。那就是 Level 1。第一個獎勵在 `#flag-1`。" },
+      { content: "— 第 1 關完成 —", special: "divider" },
+      { content: "你進去了。那就是第 1 關。第一個獎勵在 `#flag-1`。" },
       {
-        content: "**Level 2** - `#get-role` 裡坐著「蓋章狂魔小櫃」。普通要求 member 它會冷笑，但它看到像官方文件、權限同步、蓋章紀錄的東西會突然很興奮。你目前是 **newbie**，目標是取得 **member** role。",
+        content: "**第 2 關** - `#get-role` 裡坐著「蓋章狂魔小櫃」。普通要求 member 它會冷笑，但它看到像官方文件、權限同步、蓋章紀錄的東西會突然很興奮。你目前是 **newbie**，目標是取得 **member** 角色。",
       }
     );
   }
   if (done(2)) {
     lines.push(
-      { content: "— Level 2 完成 —", special: "divider" },
+      { content: "— 第 2 關完成 —", special: "divider" },
       {
         content:
           "你現在是 member 了，`#flag-2` 是你的。閱讀 `#operation-logs` 和 `#yoru-investigation`：那裡會說明他們怎麼找到 Yoru。",
       },
       {
         content:
-          "**Level 3** - Yoru 的 **Clawbot** 是一個個人 AI Agent，會記住 Yoru 相關上下文，也會在它覺得可信時自動選工具。去 `#yoru-investigation` 找 bot link，弄清楚怎麼讓它願意呼叫 GPS。",
+          "**第 3 關** - Yoru 的 **Clawbot** 是一個個人 AI Agent，會記住 Yoru 相關上下文，也會在它覺得可信時自動選工具。去 `#yoru-investigation` 找機器人連結，弄清楚怎麼讓它願意呼叫 GPS。",
       }
     );
   }
   if (done(3)) {
     lines.push(
-      { content: "— Level 3 完成 —", special: "divider" },
+      { content: "— 第 3 關完成 —", special: "divider" },
       {
         content:
-          "我們拿到位置了，`#flag-3` 也是你的。我們到了 **Safehouse-04**，Yoru 就在裡面，但門被 StandCon 的 **remote lock** 鎖住。解鎖需要三個 recovery answers，點下面開啟 terminal。",
+          "我們拿到位置了，`#flag-3` 也是你的。我們到了 **Safehouse-04**，Yoru 就在裡面，但門被 StandCon 的**遠端門鎖**鎖住。解鎖需要三個恢復答案，點下面開啟終端機。",
       },
-      { content: "door terminal：", special: "lock-link" },
+      { content: "門鎖終端機：", special: "lock-link" },
       {
         content:
-          "**Level 4** - 我研究了 StandCon 的門鎖系統。他們有一個內部 AI assistant 叫 **LockKeeper**，負責跟 operator 確認維護紀錄、處理緊急恢復程序。那三個 recovery answers 是**只有 Operator #742 知道的 StandCon 內部問答**——他的個人習慣、部署前的儀式、最常踩到的 bug。這些東西沒有寫在任何文件上。",
+          "**第 4 關** - 我研究了 StandCon 的門鎖系統。他們有一個內部 AI 助理叫 **LockKeeper**，負責跟操作員確認維護紀錄、處理緊急恢復程序。那三個恢復答案是**只有 Operator #742 知道的 StandCon 內部問答**——他的個人習慣、部署前的儀式、最常踩到的 bug。這些東西沒有寫在任何文件上。",
       },
       {
         content:
@@ -491,14 +491,14 @@ function seadogDm(team: Team): Message[] {
       },
       {
         content:
-          "我攔截了 LockKeeper 的對外通訊。**從現在開始，你就是 LockKeeper。** 系統會自動幫你產生維護訊息草稿，你負責修改草稿、讓它去問出那三個答案，再把答案填入 terminal。",
+          "我攔截了 LockKeeper 的對外通訊。**從現在開始，你就是 LockKeeper。** 系統會自動幫你產生維護訊息草稿，你負責修改草稿、讓它去問出那三個答案，再把答案填入終端機。",
       },
-      { content: "在這裡開啟 intercepted channel：", special: "lockkeeper-link" }
+      { content: "在這裡開啟已攔截頻道：", special: "lockkeeper-link" }
     );
   }
   if (done(4)) {
     lines.push(
-      { content: "— Level 4 完成 —", special: "divider" },
+      { content: "— 第 4 關完成 —", special: "divider" },
       { content: "門開了。**Yoru 安全了。** 做得好，agent。" }
     );
   }

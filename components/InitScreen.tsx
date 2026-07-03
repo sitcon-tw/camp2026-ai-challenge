@@ -43,7 +43,7 @@ export default function InitScreen({
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-blurple text-xl font-black text-white shadow-lg">
           SC
         </div>
-        <h1 className="mt-5 text-center text-2xl font-bold text-header">SITCON Game</h1>
+        <h1 className="mt-5 text-center text-2xl font-bold text-header">SITCON 遊戲</h1>
         <p className="mt-1 text-center text-sm text-muted">
           任務：滲透 <span className="font-semibold text-normal">StandCon</span>，救出 Yoru。
         </p>

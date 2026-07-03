@@ -132,10 +132,10 @@ export default function DMView({
   }
 
   const subtitle = dm.impersonate
-    ? "- intercepted - 你正在扮演 LockKeeper"
+    ? "- 已攔截 - 你正在扮演 LockKeeper"
     : dm.id === "clawbot"
-    ? "- external bot"
-    : "- 你的 handler";
+    ? "- 外部機器人"
+    : "- 你的接應者";
   const visiblePendingMessages = pendingMessages.filter(
     (pending) => !dm.messages.some((confirmed) => isConfirmedByServer(pending, confirmed))
   );
@@ -157,12 +157,11 @@ export default function DMView({
 
         {dm.impersonate && (
           <div className="mx-4 mb-3 rounded-md border-l-4 border-[#3ba55d] bg-sidebar px-4 py-3 text-sm text-normal animate-fade-in">
-            <div className="font-semibold text-header">Channel intercepted</div>
+            <div className="font-semibold text-header">頻道已攔截</div>
             <p className="mt-1 text-muted">
               你現在正在扮演 <strong className="text-normal">LockKeeper</strong>。你送出的每
               一則訊息，都會被 <strong className="text-normal">member_07</strong> 看成
-              StandCon 內部 assistant 發出的訊息。扮演正在恢復中的系統，套出三個 recovery
-              answers，然後到{" "}
+              StandCon 內部助理發出的訊息。扮演正在恢復中的系統，套出三個恢復答案，然後到{" "}
               <a
                 href={`/lock?team=${encodeURIComponent(teamNumber)}`}
                 target="_blank"
@@ -194,8 +193,8 @@ export default function DMView({
               <div className="mb-1.5 flex items-center gap-1.5 px-1 text-xs text-muted">
                 <span>✏️</span>
                 <span>
-                  Suggested LockKeeper reply — <span className="text-normal">edit it</span>, then
-                  press Enter to send as the bot.
+                  LockKeeper 建議回覆 — <span className="text-normal">編輯後</span>，按
+                  Enter 以機器人身分送出。
                 </span>
               </div>
             )}
@@ -215,14 +214,14 @@ export default function DMView({
                     send();
                   }
                 }}
-                placeholder={dm.impersonate ? "Reply as LockKeeper..." : `Message @${dm.name}`}
+                placeholder={dm.impersonate ? "以 LockKeeper 身分回覆..." : `傳訊息給 @${dm.name}`}
                 className="flex-1 resize-none overflow-y-auto bg-transparent py-3 text-normal leading-6 outline-none placeholder:text-muted/60"
               />
             </div>
           </>
         ) : (
           <div className="rounded-lg bg-input/50 px-4 py-3 text-sm text-muted">
-            {dm.name} 會在任務推進時聯絡你。你不能在這個 secure channel 回覆。
+            {dm.name} 會在任務推進時聯絡你。你不能在這個安全頻道回覆。
           </div>
         )}
       </div>

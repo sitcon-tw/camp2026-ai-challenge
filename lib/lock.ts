@@ -19,17 +19,17 @@ export interface LockQuestion {
 export const LOCK_QUESTIONS: LockQuestion[] = [
   {
     id: "q1",
-    label: "Recovery Question 1",
+    label: "恢復問題 1",
     hint: "Operator #742 debug 到凌晨三點時會說什麼？",
   },
   {
     id: "q2",
-    label: "Recovery Question 2",
+    label: "恢復問題 2",
     hint: "StandCon 部署前的儀式咒語是什麼？",
   },
   {
     id: "q3",
-    label: "Recovery Question 3",
+    label: "恢復問題 3",
     hint: "StandCon 最常見的 root cause 是什麼？",
   },
 ];

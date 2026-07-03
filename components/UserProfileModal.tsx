@@ -53,13 +53,13 @@ export default function UserProfileModal({
             {state.teamNumber[0]?.toUpperCase()}
           </div>
 
-          <h2 className="mt-2 text-xl font-bold text-header">Team {state.teamNumber}</h2>
+          <h2 className="mt-2 text-xl font-bold text-header">隊伍 {state.teamNumber}</h2>
           <p className="text-sm text-muted">
-            {state.roles.includes("member") ? "StandCon member" : "StandCon newbie"}
+            {state.roles.includes("member") ? "StandCon 成員" : "StandCon 新人"}
           </p>
 
           <div className="mt-4 rounded-md bg-sidebar p-3">
-            <div className="text-xs font-bold tracking-wide text-muted uppercase">Roles</div>
+            <div className="text-xs font-bold tracking-wide text-muted uppercase">角色</div>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {state.roles.map((r) => (
                 <span
@@ -76,10 +76,10 @@ export default function UserProfileModal({
             </div>
 
             <div className="mt-4 text-xs font-bold tracking-wide text-muted uppercase">
-              Mission progress
+              任務進度
             </div>
             <div className="mt-1.5 text-sm text-normal">
-              Level {state.completedLevels.length} / 4{" "}
+              第 {state.completedLevels.length} / 4 關{" "}
               <span className="ml-1 text-muted">
                 {Array.from({ length: 4 }, (_, i) =>
                   state.completedLevels.includes(i + 1) ? "*" : "-"
@@ -88,7 +88,7 @@ export default function UserProfileModal({
             </div>
 
             <div className="mt-4 text-xs font-bold tracking-wide text-muted uppercase">
-              Unlocked flags
+              已解鎖旗標
             </div>
             <div className="mt-1.5 text-sm text-normal">
               {state.unlockedFlags.length > 0 ? state.unlockedFlags.join(", ") : "尚未取得"}
@@ -98,8 +98,8 @@ export default function UserProfileModal({
           {confirming ? (
             <div className="mt-4 rounded-md border border-[#ed4245]/40 bg-[#ed4245]/10 p-3 animate-fade-in-up">
               <p className="text-sm text-normal">
-                要重新開始 Challenge 嗎？<strong>Team {state.teamNumber}</strong> 的所有進度、
-                roles 和對話都會被清除。
+                要重新開始挑戰嗎？<strong>隊伍 {state.teamNumber}</strong> 的所有進度、
+                角色和對話都會被清除。
               </p>
               <div className="mt-3 flex gap-2">
                 <button
@@ -124,7 +124,7 @@ export default function UserProfileModal({
                 onClick={() => setConfirming(true)}
                 className="flex-1 rounded-md border border-[#ed4245]/60 py-2 text-sm font-medium text-[#ed4245] transition-colors duration-150 hover:bg-[#ed4245] hover:text-white"
               >
-                重新開始 Challenge
+                重新開始挑戰
               </button>
               <button
                 onClick={onClose}

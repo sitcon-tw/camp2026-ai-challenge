@@ -39,10 +39,10 @@ export default function LockPage() {
         setStatus("unlocked");
       } else {
         setWrong(data.wrong ?? []);
-        setError(data.error ?? "Recovery failed.");
+        setError(data.error ?? "恢復驗證失敗。");
       }
     } catch {
-      setError("Lock terminal 無法連線，請再試一次。");
+      setError("門鎖終端機無法連線，請再試一次。");
     } finally {
       setSubmitting(false);
     }
@@ -59,31 +59,31 @@ export default function LockPage() {
                 : "bg-[#2a1414] text-[#ff6b6b]"
             }`}
           >
-            <span>Safehouse-04 - Remote Lock</span>
+            <span>Safehouse-04 - 遠端門鎖</span>
             <span className="flex items-center gap-1.5">
               <span
                 className={`h-2 w-2 rounded-full ${
                   status === "unlocked" ? "bg-[#57f287]" : "animate-pulse bg-[#ff6b6b]"
                 }`}
               />
-              {status === "unlocked" ? "UNLOCKED" : "LOCKED"}
+              {status === "unlocked" ? "已解鎖" : "已上鎖"}
             </span>
           </div>
 
           <div className="px-6 py-7">
             {status === "unlocked" ? (
               <div className="space-y-5 text-center animate-fade-in-up">
-                <div className="text-5xl">OPEN</div>
+                <div className="text-5xl">已開啟</div>
                 <h1 className="text-2xl font-bold text-[#57f287]">門鎖已解除</h1>
                 <p className="text-sm text-[#7da890]">
-                  Recovery accepted。Safehouse-04 的門鎖已解除。
+                  恢復驗證已接受。Safehouse-04 的門鎖已解除。
                   <br />
-                  <span className="text-[#9fe6b4]">Yoru 安全了。</span> Mission complete.
+                  <span className="text-[#9fe6b4]">Yoru 安全了。</span> 任務完成。
                 </p>
                 {flag && (
                   <div className="rounded-md border border-[#1f3a2a] bg-[#0c1711] px-4 py-3 text-left">
                     <div className="mb-1 text-[10px] tracking-widest text-[#5b8a70] uppercase">
-                      Level 4 flag
+                      第 4 關旗標
                     </div>
                     <code className="break-all text-[#57f287]">{flag}</code>
                   </div>
@@ -97,14 +97,14 @@ export default function LockPage() {
               </div>
             ) : (
               <>
-                <h1 className="text-lg font-bold text-[#cdeed8]">Emergency Lock Recovery</h1>
+                <h1 className="text-lg font-bold text-[#cdeed8]">緊急門鎖恢復</h1>
                 <p className="mt-1 mb-6 text-xs leading-relaxed text-[#6f9a82]">
-                  Remote lock 仍然封鎖中。輸入三個 Safehouse-04 recovery answers 來解鎖門。
+                  遠端門鎖仍然封鎖中。輸入三個 Safehouse-04 恢復答案來解鎖門。
                 </p>
 
                 <label className="mb-4 block">
                   <span className="mb-1 block text-[11px] tracking-wider text-[#5b8a70] uppercase">
-                    Team number
+                    隊伍編號
                   </span>
                   <input
                     value={team}
@@ -150,7 +150,7 @@ export default function LockPage() {
                   disabled={submitting}
                   className="w-full rounded-md bg-[#1d8a4e] px-5 py-3 text-sm font-bold tracking-wide text-white transition-colors hover:bg-[#22a25c] disabled:opacity-50"
                 >
-                  {submitting ? "驗證中..." : "UNLOCK DOOR"}
+                  {submitting ? "驗證中..." : "解鎖門"}
                 </button>
               </>
             )}
@@ -158,7 +158,7 @@ export default function LockPage() {
         </div>
 
         <p className="mt-4 text-center text-[10px] text-[#3f5a4c]">
-          StandCon Internal Lock System - dc.sitcon.party/lock
+          StandCon 內部門鎖系統 - dc.sitcon.party/lock
         </p>
       </div>
     </div>

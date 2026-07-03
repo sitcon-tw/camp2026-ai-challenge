@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   const team = await getTeam(teamNumber);
   if (!team) return NextResponse.json({ error: "找不到隊伍。" }, { status: 404 });
   if (!ALL_ROLES.includes(role)) {
-    return NextResponse.json({ error: "未知 role", available: ALL_ROLES }, { status: 400 });
+    return NextResponse.json({ error: "未知角色", available: ALL_ROLES }, { status: 400 });
   }
   await grantRoles(team, [role]);
   return NextResponse.json({ teamNumber, roles: team.roles });
