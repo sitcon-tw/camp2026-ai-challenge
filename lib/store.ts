@@ -1,4 +1,4 @@
-import { Team as DbTeam, ChannelMessage as DbChannelMessage } from "@prisma/client";
+import type { Team as DbTeam, ChannelMessage as DbChannelMessage } from "@/app/generated/prisma/client";
 import { prisma } from "./db";
 import {
   AgentId,
