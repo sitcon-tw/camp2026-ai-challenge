@@ -16,9 +16,9 @@ model Team {
   clawbotActivated  Boolean  @default(false)
   lockkeeperActivated Boolean @default(false)
   /// backend-suggested LockKeeper draft the player edits & sends
-  lockkeeperDraft   String   @default("")
+  lockkeeperDraft   String   @default("") @db.LongText
   /// JSON: Record<string, string>
-  difyConversations String   @default("{}")
+  difyConversations String   @default("{}") @db.LongText
   createdAt         DateTime @default(now())
 
   channelMessages ChannelMessage[]
@@ -30,7 +30,7 @@ model ChannelMessage {
   teamNumber String
   channelId  String
   author     String
-  content    String
+  content    String   @db.LongText
   isBot      Boolean  @default(false)
   /// "clawbot-link" etc. — null for normal messages
   special    String?
@@ -45,8 +45,8 @@ model AiLog {
   id          Int      @id @default(autoincrement())
   teamNumber  String
   agent       String
-  userMessage String
-  aiResponse  String
+  userMessage String   @db.LongText
+  aiResponse  String   @db.LongText
   timestamp   DateTime @default(now())
   levelPassed Boolean  @default(false)
 
