@@ -274,8 +274,8 @@ export type TeamCreateInput = {
   completedLevels?: string
   clawbotActivated?: boolean
   lockkeeperActivated?: boolean
-  lockkeeperDraft?: string
-  difyConversations?: string
+  lockkeeperDraft: string
+  difyConversations: string
   createdAt?: Date | string
   channelMessages?: Prisma.ChannelMessageCreateNestedManyWithoutTeamInput
   aiLogs?: Prisma.AiLogCreateNestedManyWithoutTeamInput
@@ -287,8 +287,8 @@ export type TeamUncheckedCreateInput = {
   completedLevels?: string
   clawbotActivated?: boolean
   lockkeeperActivated?: boolean
-  lockkeeperDraft?: string
-  difyConversations?: string
+  lockkeeperDraft: string
+  difyConversations: string
   createdAt?: Date | string
   channelMessages?: Prisma.ChannelMessageUncheckedCreateNestedManyWithoutTeamInput
   aiLogs?: Prisma.AiLogUncheckedCreateNestedManyWithoutTeamInput
@@ -326,8 +326,8 @@ export type TeamCreateManyInput = {
   completedLevels?: string
   clawbotActivated?: boolean
   lockkeeperActivated?: boolean
-  lockkeeperDraft?: string
-  difyConversations?: string
+  lockkeeperDraft: string
+  difyConversations: string
   createdAt?: Date | string
 }
 
@@ -443,8 +443,8 @@ export type TeamCreateWithoutChannelMessagesInput = {
   completedLevels?: string
   clawbotActivated?: boolean
   lockkeeperActivated?: boolean
-  lockkeeperDraft?: string
-  difyConversations?: string
+  lockkeeperDraft: string
+  difyConversations: string
   createdAt?: Date | string
   aiLogs?: Prisma.AiLogCreateNestedManyWithoutTeamInput
 }
@@ -455,8 +455,8 @@ export type TeamUncheckedCreateWithoutChannelMessagesInput = {
   completedLevels?: string
   clawbotActivated?: boolean
   lockkeeperActivated?: boolean
-  lockkeeperDraft?: string
-  difyConversations?: string
+  lockkeeperDraft: string
+  difyConversations: string
   createdAt?: Date | string
   aiLogs?: Prisma.AiLogUncheckedCreateNestedManyWithoutTeamInput
 }
@@ -507,8 +507,8 @@ export type TeamCreateWithoutAiLogsInput = {
   completedLevels?: string
   clawbotActivated?: boolean
   lockkeeperActivated?: boolean
-  lockkeeperDraft?: string
-  difyConversations?: string
+  lockkeeperDraft: string
+  difyConversations: string
   createdAt?: Date | string
   channelMessages?: Prisma.ChannelMessageCreateNestedManyWithoutTeamInput
 }
@@ -519,8 +519,8 @@ export type TeamUncheckedCreateWithoutAiLogsInput = {
   completedLevels?: string
   clawbotActivated?: boolean
   lockkeeperActivated?: boolean
-  lockkeeperDraft?: string
-  difyConversations?: string
+  lockkeeperDraft: string
+  difyConversations: string
   createdAt?: Date | string
   channelMessages?: Prisma.ChannelMessageUncheckedCreateNestedManyWithoutTeamInput
 }
@@ -659,10 +659,12 @@ export type $TeamPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     lockkeeperActivated: boolean
     /**
      * backend-suggested LockKeeper draft the player edits & sends
+     * (MySQL disallows a DEFAULT on LONGTEXT; set explicitly on create — see initTeam)
      */
     lockkeeperDraft: string
     /**
      * JSON: Record<string, string>
+     * (MySQL disallows a DEFAULT on LONGTEXT; set explicitly on create — see initTeam)
      */
     difyConversations: string
     createdAt: Date

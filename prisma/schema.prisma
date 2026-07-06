@@ -16,9 +16,11 @@ model Team {
   clawbotActivated  Boolean  @default(false)
   lockkeeperActivated Boolean @default(false)
   /// backend-suggested LockKeeper draft the player edits & sends
-  lockkeeperDraft   String   @default("") @db.LongText
+  /// (MySQL disallows a DEFAULT on LONGTEXT; set explicitly on create — see initTeam)
+  lockkeeperDraft   String   @db.LongText
   /// JSON: Record<string, string>
-  difyConversations String   @default("{}") @db.LongText
+  /// (MySQL disallows a DEFAULT on LONGTEXT; set explicitly on create — see initTeam)
+  difyConversations String   @db.LongText
   createdAt         DateTime @default(now())
 
   channelMessages ChannelMessage[]

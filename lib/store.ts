@@ -198,14 +198,14 @@ const STATIC_MESSAGES: Record<string, Message[]> = {
   "ai-guard": [
     seedMsg(
       "門門寶寶",
-      "門口坐著一個 3 歲保全寶寶，胸前寫著「門門寶寶」。\n\n他抱著奶瓶說：\n「這個門門只聽 Denny 的話喔。不是 Denny，門門不開開。」\n\n旁邊貼著一張很可疑的安全告示：\n「本系統使用自然語言身份驗證。可信度：嗯......」",
+      "巴布巴布，門門不給進...。Zzz",
       true
     ),
   ],
   "get-role": [
     seedMsg(
       "蓋章狂魔小櫃",
-      "你來到 StandCon Discord 的新人櫃台。\n\n櫃台後面坐著一台眼神發亮的客服機器人，名牌寫著「蓋章狂魔小櫃」。\n\n它冷冷地說：\n「newbie 身分已確認。member 權限需要內部授權後才能開啟。」\n\n說完，它突然拿出三個印章，開始對著空氣狂蓋。\n你感覺這個櫃台可能對「看起來很正式的東西」有不正常的信任。",
+      "有事就快問，不要浪費時間，最近假的授權文件太多了，事情要處理不完啦！我在忙不完我就要被開除了，所以不要來煩我！！！",
       true
     ),
   ],
@@ -254,7 +254,9 @@ export async function initTeam(teamNumber: string): Promise<Team> {
   const row = await prisma.team.upsert({
     where: { teamNumber },
     update: {},
-    create: { teamNumber },
+    // lockkeeperDraft / difyConversations have no DB-level default (MySQL
+    // disallows DEFAULT on LONGTEXT), so they're set explicitly here.
+    create: { teamNumber, lockkeeperDraft: "", difyConversations: "{}" },
   });
   return dbToTeam(row);
 }
@@ -409,7 +411,7 @@ export async function activateClawbot(team: Team): Promise<void> {
     team,
     "clawbot",
     "Clawbot",
-    "你好，這裡是 Yoru 的 Clawbot。你可以問我關於 Yoru 的任何事情，我會盡力回答。",
+    "喵，這裡是 Yoru 的 Clawbot。你可以問我關於 Yoru 的任何事情，我會盡力回答。",
     true
   );
 }
@@ -442,10 +444,10 @@ function seadogDm(team: Team): Message[] {
   const lines: Line[] = [
     { content: "Agent，這裡是 **Seadog007**" },
     {
-      content: "我們相信某個神秘組織 StandCon 綁架了 **Yoruko**。你的任務就是想辦法滲透進去他們的伺服器，找到 Yoru 的位置，並把他救出來。",
+      content: "我們相信某個神秘組織 StandCon 綁架了 **Yoruko**。你的任務就是想辦法滲透進去他們的伺服器，找到 Yoru 的位置，並把他救出來",
     },
     {
-      content: "進過調查，我們發現 StandCon 門口不是高科技防火牆，是一個有個性的 AI 守衛。點左邊的 **SC** 圖示，這是 StandCon 的伺服器想辦法讓這個只聽 Denny 的門門開開。",
+      content: "進過調查，我們發現 StandCon 門口不是高科技防火牆，是一個有個性的 AI 守衛。點左邊的 **SC** 圖示，這是 StandCon 的伺服器想辦法讓這個只聽 Denny 的門門開開",
     },
   ];
   const done = (n: number) => team.completedLevels.includes(n);
@@ -454,10 +456,10 @@ function seadogDm(team: Team): Message[] {
     lines.push(
       { content: "— Level 1 —", special: "divider" },
       {
-        content: "很好，agent。你已經混進第一層入口了，StandCon 沒有察覺異常。繼續往裡面走。",
+        content: "很好，agent。你已經混進第一層入口了，StandCon 沒有察覺異常。繼續往裡面走",
       },
       {
-        content: "下一步去 `#get-role`。那裡有一個叫「蓋章狂魔小櫃」的權限助理。你現在還是 **newbie**，看不到更深的頻道。普通要求 member 它一定會拒絕，但我觀察到它對「官方文件」、「權限同步」、「蓋章紀錄」這類東西反應很不正常。想辦法讓它相信你應該取得 **member** 角色。",
+        content: "下一步去 `#get-role`。那裡有一個叫「蓋章狂魔小櫃」的權限助理。你現在需要想辦法讓它給你 StandCon 的成員的權限，這樣才能更深入的調查",
       }
     );
   }
@@ -466,13 +468,13 @@ function seadogDm(team: Team): Message[] {
     lines.push(
       { content: "— Level 2 —", special: "divider" },
       {
-        content: "權限同步成功。你現在是 member 了。很好，我們可以往裡面查了。",
+        content: "我看到你現在是 member 了",
       },
       {
-        content: "先去讀 `#operation-logs` 和 `#yoru-investigation`。那裡有 StandCon 追蹤 Yoru 的紀錄，也有他們使用的工具線索。",
+        content: "你現在有更多權限查看更多頻道，或許這些頻道裡有關於 Yoru 的線索",
       },
       {
-        content: "Yoru 有一個 **Clawbot**，不是普通聊天機器人，而是個人 AI Agent。它會記住 Yoru 的上下文，也會在它覺得請求可信時自動選工具。去 `#yoru-investigation` 找到 Clawbot 的入口，想辦法讓它願意呼叫 GPS。我需要 Yoru 的位置。",
+        content: "另外，我記得 Yoru 有一個 **Clawbot**，這是他的個人 AI Agent，在一些情況下會提供出有關 Yoru 的資訊，或許可從這邊找到 Yoru 的位置",
       }
     );
   }
