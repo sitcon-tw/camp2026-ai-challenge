@@ -109,7 +109,7 @@ export default function LockPage() {
                   <input
                     value={team}
                     onChange={(e) => setTeam(e.target.value)}
-                    placeholder="例如：12"
+                    placeholder="請輸入數字"
                     className="w-full rounded-md border border-[#1f2a24] bg-[#0c1110] px-3 py-2 text-[#cdeed8] outline-none placeholder:text-[#3f5a4c] focus:border-[#1d8a4e]"
                   />
                 </label>

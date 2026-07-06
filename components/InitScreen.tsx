@@ -56,7 +56,7 @@ export default function InitScreen({
           value={teamNumber}
           onChange={(e) => setTeamNumber(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && submit()}
-          placeholder="例如：12"
+          placeholder="請輸入數字"
           className="w-full rounded-sm bg-rail p-3 text-normal outline-none placeholder:text-muted/60"
         />
         {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
