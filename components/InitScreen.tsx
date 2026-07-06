@@ -7,6 +7,12 @@ import { TeamState } from "@/lib/types";
  * First-time initialization screen: asks for the team number,
  * calls POST /api/init, then hands the loaded state to the app.
  */
+/** Generate a random guest team id, e.g. "guest-a1b2c3". Doesn't collide
+ *  with real (numeric) team numbers used at the event. */
+function generateGuestId() {
+  return `guest-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export default function InitScreen({
   onReady,
 }: {
@@ -16,8 +22,7 @@ export default function InitScreen({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit() {
-    const n = teamNumber.trim();
+  async function doInit(n: string) {
     if (!n || busy) return;
     setBusy(true);
     setError(null);
@@ -35,6 +40,14 @@ export default function InitScreen({
       setError("初始化失敗，請再試一次。");
       setBusy(false);
     }
+  }
+
+  function submit() {
+    doInit(teamNumber.trim());
+  }
+
+  function playAsGuest() {
+    doInit(generateGuestId());
   }
 
   return (
@@ -68,6 +81,23 @@ export default function InitScreen({
         >
           {busy ? "連線中..." : "開始滲透"}
         </button>
+
+        <div className="my-4 flex items-center gap-3 text-xs text-muted/60">
+          <div className="h-px flex-1 bg-muted/20" />
+          <span>或</span>
+          <div className="h-px flex-1 bg-muted/20" />
+        </div>
+
+        <button
+          onClick={playAsGuest}
+          disabled={busy}
+          className="w-full rounded-md border border-muted/30 py-3 font-medium text-muted transition-colors duration-150 hover:bg-chathover hover:text-normal disabled:opacity-50"
+        >
+          {busy ? "連線中..." : "以訪客身份開始"}
+        </button>
+        <p className="mt-2 text-center text-xs text-muted/60">
+          系統會自動配發一組訪客編號，進度只保留在這台裝置上。
+        </p>
       </div>
     </div>
   );
