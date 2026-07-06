@@ -88,6 +88,35 @@ function normalizeReply(message: unknown, nestedReplyField?: string): string | u
   return typeof nested === "string" ? nested : message;
 }
 
+function parseJsonLine(s: string): {
+  message: string;
+  completeLevel: string;
+  team?: string;
+} {
+  let json = "";
+  let inString = false;
+  let escaping = false;
+
+  for (const char of s) {
+    if (escaping) {
+      json += char;
+      escaping = false;
+    } else if (char === "\\") {
+      json += char;
+      escaping = inString;
+    } else if (char === '"') {
+      json += char;
+      inString = !inString;
+    } else if (inString && char === "\n") {
+      json += "\\n";
+    } else {
+      json += char;
+    }
+  }
+
+  return JSON.parse(json);
+}
+
 export function parseDifyAgentAnswer(
   rawAnswer: unknown,
   options: ParseOptions = {},
@@ -95,8 +124,10 @@ export function parseDifyAgentAnswer(
   const raw = String(rawAnswer ?? "");
   const passMarker = options.passMarker ?? DEFAULT_PASS_MARKER;
 
-  const parsed = tryParseObject(raw);
-  if (parsed) {
+  // const parsed = tryParseObject(raw);
+  const parsed = parseJsonLine(raw);
+
+  if (parsed.message && parsed.completeLevel) {
     return {
       reply: normalizeReply(parsed.message, options.nestedReplyField) ?? raw,
       passed: String(parsed.completeLevel).toLowerCase() === "true",
