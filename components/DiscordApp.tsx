@@ -144,6 +144,22 @@ export default function DiscordApp() {
   const unreadDms = state.dms.filter((d) => d.messages.length > (seen[d.id] ?? 0));
   const primaryRole = state.roles.includes("member") ? "member" : "newbie";
 
+  /** Clear this browser's local data (team number + unread state) and go
+   *  back to the "enter team number" screen. Server-side progress for the
+   *  team is untouched — entering the same number later resumes it. */
+  function switchTeam() {
+    if (teamNumber) localStorage.removeItem(`standcon-seen-${teamNumber}`);
+    localStorage.removeItem("standcon-team");
+    prevState.current = null;
+    setState(null);
+    setSeen({});
+    setSelectedId(null);
+    setSelectedDm("seadog007");
+    setView("home");
+    setShowProfile(false);
+    setTeamNumber(null);
+  }
+
   async function restartChallenge() {
     const res = await fetch(`/api/team/${encodeURIComponent(state!.teamNumber)}/reset`, {
       method: "POST",
@@ -400,6 +416,7 @@ export default function DiscordApp() {
           state={state}
           onClose={() => setShowProfile(false)}
           onRestart={restartChallenge}
+          onSwitchTeam={switchTeam}
         />
       )}
       <ToastStack toasts={toasts} />

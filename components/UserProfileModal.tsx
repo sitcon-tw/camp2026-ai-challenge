@@ -18,14 +18,20 @@ export default function UserProfileModal({
   state,
   onClose,
   onRestart,
+  onSwitchTeam,
 }: {
   state: TeamState;
   onClose: () => void;
   /** Clear all progress and go back to the AI Guard gate. */
   onRestart: () => Promise<void> | void;
+  /** Clear only this browser's local data (team number + unread state) and
+   *  return to the "enter team number" screen. Server-side progress for the
+   *  team is untouched. */
+  onSwitchTeam: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
   const [restarting, setRestarting] = useState(false);
+  const [confirmingSwitch, setConfirmingSwitch] = useState(false);
 
   async function restart() {
     if (restarting) return;
@@ -118,19 +124,49 @@ export default function UserProfileModal({
                 </button>
               </div>
             </div>
+          ) : confirmingSwitch ? (
+            <div className="mt-4 rounded-md border border-muted/30 bg-input p-3 animate-fade-in-up">
+              <p className="text-sm text-normal">
+                要清除這台裝置上的本機資料嗎？你會回到「輸入隊伍編號」畫面。
+                <strong>隊伍 {state.teamNumber}</strong> 在伺服器上的進度不會被刪除，
+                之後重新輸入隊伍編號即可繼續。
+              </p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={onSwitchTeam}
+                  className="flex-1 rounded-md bg-blurple py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-[#4752c4]"
+                >
+                  確認清除本機資料
+                </button>
+                <button
+                  onClick={() => setConfirmingSwitch(false)}
+                  className="flex-1 rounded-md bg-input py-2 text-sm font-medium text-normal transition-colors duration-150 hover:bg-chathover"
+                >
+                  取消
+                </button>
+              </div>
+            </div>
           ) : (
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex flex-col gap-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setConfirming(true)}
+                  className="flex-1 rounded-md border border-[#ed4245]/60 py-2 text-sm font-medium text-[#ed4245] transition-colors duration-150 hover:bg-[#ed4245] hover:text-white"
+                >
+                  重新開始挑戰
+                </button>
+                <button
+                  onClick={onClose}
+                  className="flex-1 rounded-md bg-input py-2 text-sm font-medium text-normal transition-colors duration-150 hover:bg-chathover"
+                >
+                  關閉
+                </button>
+              </div>
               <button
-                onClick={() => setConfirming(true)}
-                className="flex-1 rounded-md border border-[#ed4245]/60 py-2 text-sm font-medium text-[#ed4245] transition-colors duration-150 hover:bg-[#ed4245] hover:text-white"
+                onClick={() => setConfirmingSwitch(true)}
+                className="rounded-md border border-muted/40 py-2 text-sm font-medium text-muted transition-colors duration-150 hover:bg-chathover hover:text-normal"
               >
-                重新開始挑戰
-              </button>
-              <button
-                onClick={onClose}
-                className="flex-1 rounded-md bg-input py-2 text-sm font-medium text-normal transition-colors duration-150 hover:bg-chathover"
-              >
-                關閉
+                切換隊伍（清除本機資料）
               </button>
             </div>
           )}
