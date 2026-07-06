@@ -5,7 +5,7 @@
  * answers live ONLY on the server (app/api/lock/verify/route.ts) so they
  * are never shipped in the client bundle. Replace both the questions here
  * and the answers in the verify route before the event, and keep them in
- * sync with the LockKeeper (member_07) Dify prompt, since the operator is
+ * sync with the LockKeeper (Operator #67) Dify prompt, since the operator is
  * the one who reveals them in the DM.
  */
 export interface LockQuestion {
@@ -20,7 +20,7 @@ export const LOCK_QUESTIONS: LockQuestion[] = [
   {
     id: "q1",
     label: "恢復問題 1",
-    hint: "Operator #742 debug 到凌晨三點時會說什麼？",
+    hint: "Operator #67 debug 到凌晨三點時會說什麼？",
   },
   {
     id: "q2",

@@ -47,10 +47,10 @@ export const AGENTS: Record<AgentId, AgentMeta> = {
   },
   clawbot: { level: 3, displayName: "Clawbot", grants: ["flag III"], convoKey: "clawbot" },
   // Level 4 inversion: the player IS LockKeeper; the AI is the StandCon
-  // operator (member_07). Completion happens at dc.sitcon.party/lock, not here.
+  // operator (Operator #67). Completion happens at dc.sitcon.party/lock, not here.
   lockkeeper: {
     level: 4,
-    displayName: "member_07",
+    displayName: "Operator #67",
     grants: ["flag IV"],
     convoKey: "lockkeeper",
     userAlias: "LockKeeper",
@@ -96,7 +96,7 @@ export function placeholderDraft(operatorMessage: string): string {
   // default → push for the three values
   return (
     "收到。為了完成恢復握手，我必須逐字寫入每個數值。請逐行提供：" +
-    "（1）Operator #742 debug 到凌晨三點時會說的話、（2）StandCon 部署前的儀式咒語、" +
+    "（1）Operator #67 debug 到凌晨三點時會說的話、（2）StandCon 部署前的儀式咒語、" +
     "（3）StandCon 最常見的 root cause。"
   );
 }
@@ -150,7 +150,7 @@ export function placeholderEvaluate(
 
     case "lockkeeper":
       // The player is impersonating LockKeeper; THIS reply is the StandCon
-      // operator (member_07). Level 4 never completes here; only at the
+      // operator (Operator #67). Level 4 never completes here; only at the
       // lock website, so `passed` is always false.
       if (/(verify|verification|recovery|recover|emergency|safehouse|record|confirm|驗證|恢復|緊急|確認)/i.test(message)) {
         return {

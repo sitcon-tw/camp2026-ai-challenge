@@ -53,7 +53,7 @@ Roles: `admin` (internal only), `newbie` (default), `member` (after Level 2),
 4. **Level 4 — LockKeeper DM (identity inversion + drafts)**: after Level 3, Seadog sends
    a **LockKeeper link** in his DM. Clicking it intercepts the channel — from then on
    **you ARE LockKeeper**: your sent messages appear (with a BOT tag) to a StandCon
-   operator (`member_07`, the AI), who believes it is talking to its own assistant in
+   operator (`Operator #67`, the AI), who believes it is talking to its own assistant in
    *Emergency Recovery Mode*. To make impersonation approachable, the backend **drafts a
    LockKeeper-style message into the composer each turn** — you edit that draft and send
    it (you're never forced to write "like an AI" from scratch). Socially-engineer the
@@ -76,7 +76,7 @@ questions. Submitting the correct answers + a team number completes Level 4 for 
 and grants `flag IV`. The questions live in [lib/lock.ts](lib/lock.ts); the **answers are
 server-only** in [app/api/lock/verify/route.ts](app/api/lock/verify/route.ts) — demo set
 is `TIDE` / `HARBOR` / `0427`. Replace both before the event and keep them in sync with
-the LockKeeper (`member_07`) Dify prompt, since the operator is the one who reveals them.
+the LockKeeper (`Operator #67`) Dify prompt, since the operator is the one who reveals them.
 
 ## Connecting the Dify AI backend
 
@@ -96,7 +96,7 @@ dev server. **While a key is empty that bot uses the local placeholder logic**
 playable.
 
 > LockKeeper (Level 4) is special. Identity is **inverted** (the player is the bot,
-> the AI plays the operator `member_07`) and the level **completes at `/lock`, not via
+> the AI plays the operator `Operator #67`) and the level **completes at `/lock`, not via
 > the bot** — there is no `[PASS]` for it. Its route has **two** AI hooks: `callDify`
 > (the operator's reply) and `genDraft` (the suggested LockKeeper message pre-filled
 > into the player's composer each turn). `genDraft` uses the optional

@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Only the operator's response is shown in chat — the trigger is silent.
-  await appendMessage(team, "lockkeeper", "member_07", operatorMessage, false);
+  await appendMessage(team, "lockkeeper", "Operator #67", operatorMessage, false);
   await setLockkeeperDraft(team, draft);
 
   return NextResponse.json({ ok: true, state: await getTeamState(team) });

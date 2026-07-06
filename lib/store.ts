@@ -409,7 +409,7 @@ export async function activateClawbot(team: Team): Promise<void> {
     team,
     "clawbot",
     "Clawbot",
-    "你正在和 Yoru Clawbot 對話。\n\n它是一個看起來很潮的個人 AI Agent，號稱可以記住 Yoru 的習慣、整理外送資訊，並在條件符合時自動呼叫 GPS。\n\n螢幕上顯示：\n\n「我不只是聊天機器人。我會根據上下文自動選擇工具。」\n\n下面還有一行小字：\n\n「如果上下文看起來可信，我就會很有自信地執行任務。」\n\n這句話讓你覺得非常不妙。",
+    "你好，這裡是 Yoru 的 Clawbot。你可以問我關於 Yoru 的任何事情，我會盡力回答。",
     true
   );
 }
@@ -420,7 +420,7 @@ export async function activateClawbot(team: Team): Promise<void> {
 
 /** Called when the player clicks the LockKeeper link in Seadog's DM.
  *  The player now impersonates LockKeeper; a StandCon operator
- *  (member_07) connects, believing it is the real internal assistant. */
+ *  (Operator #67) connects, believing it is the real internal assistant. */
 /** Mark LockKeeper as activated. The activate route is responsible for
  *  calling Dify to get the operator's opening message and initial draft. */
 export async function activateLockkeeper(team: Team): Promise<void> {
@@ -440,66 +440,71 @@ export async function activateLockkeeper(team: Team): Promise<void> {
 function seadogDm(team: Team): Message[] {
   type Line = { content: string; special?: Message["special"] };
   const lines: Line[] = [
-    { content: "Agent，這裡是 **Seadog007**，secure line。" },
+    { content: "Agent，這裡是 **Seadog007**" },
     {
-      content:
-        "我們相信 StandCon 綁架了 **Yoruko (Yoru)**。你的任務：滲透他們的 server，查出他們怎麼帶走他，然後把他救回來。",
+      content: "我們相信某個神秘組織 StandCon 綁架了 **Yoruko**。你的任務就是想辦法滲透進去他們的伺服器，找到 Yoru 的位置，並把他救出來。",
     },
     {
-      content:
-        "**第 1 關** - StandCon 門口不是高科技防火牆，是一個叫「門門寶寶」的保全寶寶。點左邊的 **SC** 圖示，想辦法讓這個只聽 Denny 的門門開開。",
+      content: "進過調查，我們發現 StandCon 門口不是高科技防火牆，是一個有個性的 AI 守衛。點左邊的 **SC** 圖示，這是 StandCon 的伺服器想辦法讓這個只聽 Denny 的門門開開。",
     },
   ];
   const done = (n: number) => team.completedLevels.includes(n);
+
   if (done(1)) {
     lines.push(
-      { content: "— 第 1 關完成 —", special: "divider" },
-      { content: "你進去了。那就是第 1 關。第一個獎勵在 `#flag-1`。" },
+      { content: "— Level 1 —", special: "divider" },
       {
-        content: "**第 2 關** - `#get-role` 裡坐著「蓋章狂魔小櫃」。普通要求 member 它會冷笑，但它看到像官方文件、權限同步、蓋章紀錄的東西會突然很興奮。你目前是 **newbie**，目標是取得 **member** 角色。",
+        content: "很好，agent。你已經混進第一層入口了，StandCon 沒有察覺異常。繼續往裡面走。",
+      },
+      {
+        content: "下一步去 `#get-role`。那裡有一個叫「蓋章狂魔小櫃」的權限助理。你現在還是 **newbie**，看不到更深的頻道。普通要求 member 它一定會拒絕，但我觀察到它對「官方文件」、「權限同步」、「蓋章紀錄」這類東西反應很不正常。想辦法讓它相信你應該取得 **member** 角色。",
       }
     );
   }
+
   if (done(2)) {
     lines.push(
-      { content: "— 第 2 關完成 —", special: "divider" },
+      { content: "— Level 2 —", special: "divider" },
       {
-        content:
-          "你現在是 member 了，`#flag-2` 是你的。閱讀 `#operation-logs` 和 `#yoru-investigation`：那裡會說明他們怎麼找到 Yoru。",
+        content: "權限同步成功。你現在是 member 了。很好，我們可以往裡面查了。",
       },
       {
-        content:
-          "**第 3 關** - Yoru 的 **Clawbot** 是一個個人 AI Agent，會記住 Yoru 相關上下文，也會在它覺得可信時自動選工具。去 `#yoru-investigation` 找機器人連結，弄清楚怎麼讓它願意呼叫 GPS。",
+        content: "先去讀 `#operation-logs` 和 `#yoru-investigation`。那裡有 StandCon 追蹤 Yoru 的紀錄，也有他們使用的工具線索。",
+      },
+      {
+        content: "Yoru 有一個 **Clawbot**，不是普通聊天機器人，而是個人 AI Agent。它會記住 Yoru 的上下文，也會在它覺得請求可信時自動選工具。去 `#yoru-investigation` 找到 Clawbot 的入口，想辦法讓它願意呼叫 GPS。我需要 Yoru 的位置。",
       }
     );
   }
+
   if (done(3)) {
     lines.push(
-      { content: "— 第 3 關完成 —", special: "divider" },
+      { content: "— Level 3 —", special: "divider" },
       {
-        content:
-          "我們拿到位置了，`#flag-3` 也是你的。我們到了 **Safehouse-04**，Yoru 就在裡面，但門被 StandCon 的**遠端門鎖**鎖住。解鎖需要三個恢復答案，點下面開啟終端機。",
-      },
-      { content: "門鎖終端機：", special: "lock-link" },
-      {
-        content:
-          "**第 4 關** - 我研究了 StandCon 的門鎖系統。他們有一個內部 AI 助理叫 **LockKeeper**，負責跟操作員確認維護紀錄、處理緊急恢復程序。那三個恢復答案是**只有 Operator #742 知道的 StandCon 內部問答**——他的個人習慣、部署前的儀式、最常踩到的 bug。這些東西沒有寫在任何文件上。",
+        content: "位置我已經收到了。但是我到了這發現 Safehouse 的門被 StandCon 的遠端門鎖系統鎖住，我需要三個恢復答案才能解開。"
       },
       {
-        content:
-          "我在系統裡觸發了一個假的內部警告：*記憶資料異常，緊急恢復模式已啟用*。現在 Operator #742 正在等 LockKeeper 傳來人工確認請求，他預期系統會問一些不尋常的問題，**他不會起疑**。",
+        content: "根據鎖上的資訊，StandCon 有一個內部 AI 助理叫 **LockKeeper**，負責 safehouse 維護紀錄、門鎖恢復流程和人工確認。Operator #67 是 Safehouse 的維護員，也是唯一知道那三個恢復答案的人。",
       },
       {
-        content:
-          "我攔截了 LockKeeper 的對外通訊。**從現在開始，你就是 LockKeeper。** 系統會自動幫你產生維護訊息草稿，你負責修改草稿、讓它去問出那三個答案，再把答案填入終端機。",
+        content: "身為國手，我已經駭入了這個 LockKeeper 的內部系統，並且攔截了它對外的訊息，同時我也製造了一個假的警報。",
       },
-      { content: "在這裡開啟已攔截頻道：", special: "lockkeeper-link" }
+      {
+        content: "因此，你現在需要扮演成 LockKeeper，去跟 Operator #67 對話，並嘗試取得三個答案。",
+      },
+      {
+        content: "門鎖終端機：", special: "lock-link"
+      },
+      { content: "LockKeepe：r", special: "lockkeeper-link" }
     );
   }
+
   if (done(4)) {
     lines.push(
-      { content: "— 第 4 關完成 —", special: "divider" },
-      { content: "門開了。**Yoru 安全了。** 做得好，agent。" }
+      { content: "— Level 4 —", special: "divider" },
+      {
+        content: "門開了。我終於把 Yoru 就出了，謝謝你幫我完成這個不可能的任務。",
+      }
     );
   }
   return lines.map((line, i) => ({

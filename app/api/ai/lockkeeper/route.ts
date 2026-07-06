@@ -16,12 +16,12 @@ export const dynamic = "force-dynamic";
    Identity is INVERTED: the player impersonates LockKeeper. The Dify
    workflow returns a single JSON response with two fields:
 
-     operator  — what member_07 says (shown in chat as the operator's reply)
+     operator  — what Operator #67 says (shown in chat as the operator's reply)
      agent     — a suggested LockKeeper draft the player edits before sending
 
    Set in .env.local:
      DIFY_API_URL          shared base url
-     DIFY_KEY_LOCKKEEPER   operator (member_07) Dify app key
+     DIFY_KEY_LOCKKEEPER   operator (Operator #67) Dify app key
 
    NOTE: Level 4 does NOT complete here — the player takes the extracted
    answers to /lock (lock.sitcon.party). POST /api/lock/verify grants
@@ -61,7 +61,7 @@ function parseLockKeeperAnswer(raw: string): { operator: string; draft: string |
 }
 
 /** Calls Dify and parses the combined { operator, agent, team } response.
- *  operator → reply shown in chat (member_07's message)
+ *  operator → reply shown in chat (Operator #67's message)
  *  agent    → suggested LockKeeper draft bundled directly into the result */
 async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
   const res = await fetch(`${DIFY_API_URL}/chat-messages`, {

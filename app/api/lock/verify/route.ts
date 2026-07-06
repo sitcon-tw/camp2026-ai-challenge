@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
    Safehouse-04 remote lock - answer verification (Level 4 completion)
 
    DEMO answers. Replace these (and the questions in lib/lock.ts) before
-   the event, and keep them in sync with the LockKeeper / member_07 Dify
+   the event, and keep them in sync with the LockKeeper / Operator #67 Dify
    prompt; the operator is the one who reveals them in the DM.
 
    Matching is case-insensitive and whitespace-trimmed.

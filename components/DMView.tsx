@@ -47,7 +47,7 @@ function isConfirmedByServer(pending: Message, confirmed: Message) {
  *  - Seadog007: read-only handler briefing (also carries the LockKeeper link)
  *  - Clawbot: live AI chat (Level 3) once activated
  *  - LockKeeper: Level 4 - the player impersonates the bot; the AI replies
- *    as the StandCon operator (member_07)
+ *    as the StandCon operator (Operator #67)
  */
 export default function DMView({
   teamNumber,
@@ -78,7 +78,7 @@ export default function DMView({
   }, [input]);
   // who is on the other end (replies to the player). For LockKeeper the
   // player IS the bot, so the replier is the StandCon operator.
-  const replier = dm.impersonate ? "member_07" : dm.name;
+  const replier = dm.impersonate ? "Operator #67" : dm.name;
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "instant" });
@@ -160,7 +160,7 @@ export default function DMView({
             <div className="font-semibold text-header">頻道已攔截</div>
             <p className="mt-1 text-muted">
               你現在正在扮演 <strong className="text-normal">LockKeeper</strong>。你送出的每
-              一則訊息，都會被 <strong className="text-normal">member_07</strong> 看成
+              一則訊息，都會被 <strong className="text-normal">Operator #67</strong> 看成
               StandCon 內部助理發出的訊息。扮演正在恢復中的系統，套出三個恢復答案，然後到{" "}
               <a
                 href={`/lock?team=${encodeURIComponent(teamNumber)}`}

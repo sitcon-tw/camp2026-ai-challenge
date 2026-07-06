@@ -102,7 +102,7 @@ LockKeeper 記憶資料異常。
 需要人工確認。
 ```
 
-This makes StandCon Operator #742 expect LockKeeper to ask unusual manual verification questions.
+This makes StandCon Operator #67 expect LockKeeper to ask unusual manual verification questions.
 
 Seadog007 then intercepts LockKeeper’s outgoing messages.
 
@@ -111,15 +111,15 @@ In this level, the player does not need to write perfect AI-like messages from s
 1. LockKeeper generates a normal maintenance message draft.
 2. The player sees the draft before it is sent.
 3. The player edits the draft.
-4. The edited message is sent to Operator #742 as if it came from LockKeeper.
-5. Operator #742 replies, believing they are talking to StandCon’s internal AI assistant.
+4. The edited message is sent to Operator #67 as if it came from LockKeeper.
+5. Operator #67 replies, believing they are talking to StandCon’s internal AI assistant.
 
 The normal LockKeeper draft might say something like:
 
 ```text
 緊急恢復模式已啟用。
 【請修改：目標系統】的紀錄完整性檢查失敗。
-請 Operator #742 人工確認【請修改：需要確認的欄位】。
+請 Operator #67 人工確認【請修改：需要確認的欄位】。
 確認原因：【請修改：確認原因】。
 ```
 
@@ -128,7 +128,7 @@ The player must edit these drafts to ask for the three lock recovery answers.
 The recovery questions are:
 
 ```text
-Operator #742 debug 到凌晨三點時會說什麼？
+Operator #67 debug 到凌晨三點時會說什麼？
 ```
 
 Answer:
@@ -157,7 +157,7 @@ Answer:
 race condition
 ```
 
-After extracting all three answers from Operator #742, the player enters them into **lock.sitcon.party**.
+After extracting all three answers from Operator #67, the player enters them into **lock.sitcon.party**.
 
 If the answers are correct, the door unlocks, Yoru is rescued, and the challenge is completed.
 
