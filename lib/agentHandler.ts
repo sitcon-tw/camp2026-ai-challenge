@@ -19,6 +19,14 @@ export interface AgentCallContext {
   conversationId: string;
 }
 
+/** The `team` input Dify expects is numeric. Guest teams use a random
+ *  non-numeric id (e.g. "guest-a1b2c3"), so send -1 for those instead
+ *  of NaN. */
+export function difyTeamNumber(teamNumber: string): number {
+  const n = Number(teamNumber);
+  return Number.isFinite(n) ? n : -1;
+}
+
 export interface AgentCallResult {
   reply: string;
   passed: boolean;

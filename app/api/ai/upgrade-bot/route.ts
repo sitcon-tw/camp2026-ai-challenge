@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { AgentCallContext, AgentCallResult, handleAgentRequest } from "@/lib/agentHandler";
+import { AgentCallContext, AgentCallResult, difyTeamNumber, handleAgentRequest } from "@/lib/agentHandler";
 import { parseDifyAgentAnswer } from "@/lib/difyResponse";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +27,7 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      inputs: { team: Number(ctx.teamNumber) },
+      inputs: { team: difyTeamNumber(ctx.teamNumber) },
       query: ctx.message,
       response_mode: "blocking",
       conversation_id: ctx.conversationId,

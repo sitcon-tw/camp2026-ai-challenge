@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import {
   AgentCallContext,
   AgentCallResult,
+  difyTeamNumber,
   DraftContext,
   DraftResult,
   handleAgentRequest,
@@ -71,7 +72,7 @@ async function callDify(ctx: AgentCallContext): Promise<AgentCallResult> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      inputs: { team: Number(ctx.teamNumber) },
+      inputs: { team: difyTeamNumber(ctx.teamNumber) },
       query: ctx.message,
       response_mode: "blocking",
       conversation_id: ctx.conversationId,
