@@ -56,7 +56,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  await activateLockkeeper(team);
+  const activated = await activateLockkeeper(team);
+  if (!activated) {
+    const latest = await getTeam(teamNumber);
+    return NextResponse.json({
+      ok: true,
+      activated: false,
+      state: await getTeamState(latest ?? team),
+    });
+  }
 
   // Silently trigger Dify with the opening draft to get the operator's first
   // message and the next suggested draft — neither the trigger nor an error
@@ -101,5 +109,5 @@ export async function POST(req: NextRequest) {
   await appendMessage(team, "lockkeeper", "Operator #67", operatorMessage, false);
   await setLockkeeperDraft(team, draft);
 
-  return NextResponse.json({ ok: true, state: await getTeamState(team) });
+  return NextResponse.json({ ok: true, activated: true, state: await getTeamState(team) });
 }

@@ -423,16 +423,22 @@ export async function activateClawbot(team: Team): Promise<void> {
 /** Called when the player clicks the LockKeeper link in Seadog's DM.
  *  The player now impersonates LockKeeper; a StandCon operator
  *  (Operator #67) connects, believing it is the real internal assistant. */
-/** Mark LockKeeper as activated. The activate route is responsible for
- *  calling Dify to get the operator's opening message and initial draft. */
-export async function activateLockkeeper(team: Team): Promise<void> {
-  if (team.lockkeeperActivated) return;
-  team.lockkeeperActivated = true;
-  team.lockkeeperDraft = "";
-  await prisma.team.update({
-    where: { teamNumber: team.teamNumber },
+/** Mark LockKeeper as activated. Returns true only for the first activation.
+ *  The activate route is responsible for calling Dify to get the opening operator
+ *  message and initial draft. */
+export async function activateLockkeeper(team: Team): Promise<boolean> {
+  if (team.lockkeeperActivated) return false;
+  const result = await prisma.team.updateMany({
+    where: { teamNumber: team.teamNumber, lockkeeperActivated: false },
     data: { lockkeeperActivated: true, lockkeeperDraft: "" },
   });
+  if (result.count === 0) {
+    team.lockkeeperActivated = true;
+    return false;
+  }
+  team.lockkeeperActivated = true;
+  team.lockkeeperDraft = "";
+  return true;
 }
 
 /* ------------------------------------------------------------------ */

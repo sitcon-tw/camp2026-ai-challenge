@@ -29,6 +29,7 @@ export default function DiscordApp() {
   const [seen, setSeen] = useState<Record<string, number>>({});
   const prevState = useRef<TeamState | null>(null);
   const toastSeq = useRef(0);
+  const lockkeeperActivating = useRef(false);
 
   function pushToast(text: string) {
     const id = ++toastSeq.current;
@@ -196,17 +197,26 @@ export default function DiscordApp() {
       setSelectedDm("lockkeeper");
       return;
     }
-    const res = await fetch("/api/dm/lockkeeper/activate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ teamNumber }),
-    });
-    if (res.ok) {
-      applyState((await res.json()).state);
-      // Jump straight into the intercepted channel so the inversion is clear.
-      setView("home");
-      setSelectedDm("lockkeeper");
-      pushToast("LockKeeper channel 已攔截。你現在正在扮演它。");
+    if (lockkeeperActivating.current) return;
+    lockkeeperActivating.current = true;
+    try {
+      const res = await fetch("/api/dm/lockkeeper/activate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ teamNumber }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        applyState(data.state);
+        // Jump straight into the intercepted channel so the inversion is clear.
+        setView("home");
+        setSelectedDm("lockkeeper");
+        if (data.activated !== false) {
+          pushToast("LockKeeper channel 已攔截。你現在正在扮演它。");
+        }
+      }
+    } finally {
+      lockkeeperActivating.current = false;
     }
   }
 
